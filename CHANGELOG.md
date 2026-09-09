@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- `schema/observation.schema.json` v0.1 → v0.2: adds `rate_is_promotional` (boolean, nullable)
+  and `promotion_detail` (string, nullable). Round 3 built a connector against a provider rate
+  that turned out to be a new-customer promotional rate with no schema field to flag it as such
+  — the schema had `fee_is_promotional` but nothing for a promotional *rate*, which is where
+  that specific distortion actually lived. Existing rows affected by the gap are re-emitted as
+  new observations with `supersedes`, never edited in place. See `reports/04-historical.md`.
+- `docs/METHODOLOGY.md` v0.3 → v0.4: §2.3 documents NRBT's published MID rate as the midpoint
+  of the bank's own dealing spread (BUY/SELL), not an interbank mid-market rate — a known
+  limitation, and the reason the secondary (best-observed-provider-rate) benchmark stays
+  load-bearing rather than optional. Round 4 correction after Round 3 treated a benchmark
+  comparison as more authoritative than the underlying rate supports. See
+  `reports/04-historical.md`.
 - `docs/METHODOLOGY.md` v0.2 → v0.3: §3's collection-method taxonomy gains `client_api` —
   a Tier 1 quote reconstructed from a public JSON/XHR endpoint the page's own client-side
   script calls, rather than from server-rendered HTML (`published_tariff`). Matching revision

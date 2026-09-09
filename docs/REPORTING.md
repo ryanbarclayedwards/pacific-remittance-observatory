@@ -65,3 +65,11 @@ this note exists so the same slip doesn't recur in a later round.
 - A report is never edited after the round it describes closes. A later correction is a new
   entry in a later round's report, with a note pointing back to what it corrects — the same
   append-only instinct as the data store, applied to the audit trail.
+- **"Closes structurally" vs "closes substantively"** (added 2026-09-10, after Round 3
+  overclaimed the latter while only having earned the former — see `reports/04-historical.md`
+  §8's correction). A measure **closes structurally** when every leg is archived, traceable to
+  a real file, and schema-valid — the pipeline works end to end. A measure **closes
+  substantively** when it additionally produces a cost figure with no unfilled required
+  component (no `fee = null` standing in for an unknown fee, no assumed value anywhere in the
+  chain). A structural close is real progress and worth reporting as such; it is never "the
+  measure closes end to end" on its own — say which one you mean, every time.

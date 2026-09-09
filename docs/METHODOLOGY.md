@@ -1,9 +1,13 @@
-# METHODOLOGY v0.3 (draft — E1 decided; collection methods extended; other OPEN items remain)
+# METHODOLOGY v0.4 (draft — E1 decided; collection methods extended; other OPEN items remain)
 
 **Do not treat this as settled.** Sections marked OPEN are research decisions for the
 maintainer, not implementation details for an agent.
 
 **Version history:**
+- v0.4 (2026-09-10) documents NRBT's published MID as the midpoint of the bank's own dealing
+  spread, not an interbank mid-market rate, as a known limitation (§2.3) — a Round 4 correction
+  after Round 3 treated a benchmark comparison as more authoritative than the underlying rate
+  actually supports. See `reports/04-historical.md`.
 - v0.3 (2026-09-09) adds `client_api` to §3's collection-method taxonomy, alongside a matching
   CLAUDE.md §3 revision redefining Tier 1 by reachability rather than markup shape — see
   CHANGELOG.md for the migration note.
@@ -70,6 +74,17 @@ currency," not as a neutral wholesale rate that exists independently of any one 
 judgement. `benchmark_source` records which bank published the rate used; `benchmark_fx_rate`
 is archived exactly as raw as `provider_fx_rate` — both are observed figures, never assumed or
 derived from each other.
+
+**Known limitation, concrete case (added 2026-09-10, Round 4 correction):** NRBT's published
+MID rate is not an interbank mid-market rate — it is the midpoint of the bank's own dealing
+spread, i.e. `(BUY + SELL) / 2` of the rate NRBT itself would buy or sell foreign currency at
+its own counter. On 2026-09-09, NZD showed BUY 0.7367 / MID 0.7210 / SELL 0.7052 — a spread of
+roughly ±2.2% either side of the midpoint. A benchmark built from this MID is therefore already
+carrying NRBT's own commercial margin before any provider is compared against it; it is the
+best available public reference for TOP (§2.3 above), not a margin-free reference point. This
+is exactly why the secondary benchmark (below) stays load-bearing rather than optional: a
+provider rate that beats the MID by less than roughly the half-spread may still be within
+NRBT's own normal commercial range, not necessarily cheap in any deeper sense.
 
 **Secondary: best observed provider rate, retained from the first collection run.** Store both
 `benchmark_fx_rate` (central bank) and, where available, the best provider rate observed on the

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://devpolicy.org/pro/schema/observation.schema.json",
   "title": "Remittance price observation",
-  "description": "One observation = one service option, one corridor, one amount, one collection event. DRAFT v0.1 - reconcile against the 2023 audit files before freezing.",
+  "description": "One observation = one service option, one corridor, one amount, one collection event. DRAFT v0.2 (2026-09-10: added rate_is_promotional, promotion_detail) - reconcile against the 2023 audit files before freezing.",
   "type": "object",
   "required": [
     "observation_id", "collection_run_id", "collected_at",
@@ -61,6 +61,8 @@
     "fee": { "type": ["number", "null"], "minimum": 0 },
     "fee_currency": { "type": ["string", "null"] },
     "fee_is_promotional": { "type": ["boolean", "null"] },
+    "rate_is_promotional": { "type": ["boolean", "null"] },
+    "promotion_detail": { "type": ["string", "null"] },
     "provider_fx_rate": { "type": ["number", "null"], "exclusiveMinimum": 0 },
     "benchmark_fx_rate": { "type": ["number", "null"], "exclusiveMinimum": 0 },
     "benchmark_source": { "type": ["string", "null"] },
