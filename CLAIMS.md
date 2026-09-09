@@ -92,7 +92,7 @@ determination. Re-check Tier 3 quarterly.
 
 | # | Issue | Status |
 |---|---|---|
-| E1 | Benchmark FX rate unspecified; no deep market for TOP, WST, VUV, SBD, PGK, FJD | **OPEN — BLOCKING.** See METHODOLOGY §2.3 |
+| E1 | Benchmark FX rate unspecified; no deep market for TOP, WST, VUV, SBD, PGK, FJD | **DECIDED 2026-09-09.** Receiving-country central bank primary, best-observed-provider-rate retained as secondary from the first collection run. National Reserve Bank of Tonga is the first benchmark source built (Round 2). See METHODOLOGY §2.3 v0.2 and `reports/01-triage.md` §5.4 for the scoping this decision was made against |
 | E2 | Fee-inclusion convention varies by provider and changes the formula | OPEN — record per observation |
 | E3 | Provider identity harmonisation across vintages | OPEN — provider master with `active_from`/`active_to` |
 | E4 | Comparability of 2023 manual and 2026 automated vintages | OPEN — vintage flags mandatory |
@@ -107,6 +107,13 @@ fifth. The 2023 audit covers Tonga.
 Resolution: **Tonga first**, because regression-testing against data you already hold matters
 more than reach in Sprint 1. **AU–Fiji second**, as the first coverage-driven corridor. Record
 the reasoning in METHODOLOGY so corridor choice is never mistaken for a sampling frame.
+
+**Amended 2026-09-09.** The Session 4 *origin country* changes from Australia to **New
+Zealand** (SPRINT-01.md, Session 4) — Round 1 triage (`reports/01-triage.md` §5.1) found no
+AU-origin bank at confirmed Tier 1, while ANZ New Zealand is confirmed Tier 1 and reaches
+Tonga. Maintainer decision: option (b), proceed now rather than wait on a browser re-check of
+the AU-origin candidates — Session 4 proves the pipeline, not market coverage. Tonga stays the
+first destination; AU–Fiji stays the second target, unchanged.
 
 ## G. Infrastructure assumptions to verify
 

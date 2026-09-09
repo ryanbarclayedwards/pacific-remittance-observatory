@@ -1,7 +1,11 @@
-# METHODOLOGY v0.1 (draft — decisions open)
+# METHODOLOGY v0.2 (draft — E1 decided 2026-09-09; other OPEN items remain)
 
 **Do not treat this as settled.** Sections marked OPEN are research decisions for the
 maintainer, not implementation details for an agent.
+
+**Version history:** v0.2 (2026-09-09) decides §2.3 (E1, the benchmark rate) and rewrites it
+accordingly — see CHANGELOG.md for the migration note. All other sections are unchanged from
+v0.1 and remain open as marked.
 
 ## 1. Unit of observation
 
@@ -30,19 +34,46 @@ cost_pct                = implicit_cost_value / benchmark_receive_value × 100
 **OPEN (E2):** where a provider deducts the fee from the sent amount rather than adding it,
 the formula changes. Record `amount_sent_includes_fee` per observation. Never assume.
 
-### 2.3 Benchmark rate — OPEN (E1), BLOCKING
+### 2.3 Benchmark rate — DECIDED (E1), 2026-09-09
 
 Every cost figure depends on this and there is no clean answer. TOP, WST, VUV, SBD, PGK and
-FJD have no deep interbank market.
+FJD have no deep interbank market — that constraint doesn't go away with a decision, it just
+stops blocking work.
 
-Proposal, to be confirmed:
+**Primary: receiving-country central bank published daily indicative rate.** Adopted on the
+scoping in `reports/01-triage.md` §5.4. **National Reserve Bank of Tonga is the first source
+built** (Round 2), on the strength of its single-file history back to 2017 (covering the 2023
+manual-audit vintage) and a stable, non-date-keyed URL — the strongest of the six candidates
+scoped in Round 1. The same primary source is adopted for the other five central banks as
+connectors are built for their corridors, subject to the per-bank caveats already on record in
+`PROVIDERS.md`: Fiji's and Samoa's downloadable-file URLs/filenames appear to shift and need
+re-discovery each run rather than a hardcoded link; Solomon Islands' true update cadence
+(daily vs weekly) is unconfirmed; Papua New Guinea's site is currently unreachable (403 to
+every user agent tried) and access is `PENDING_PERMISSION`, not attempted around; **Reserve
+Bank of Vanuatu's TLS certificate chain is broken and is not worked around** — it stays Tier 3
+as a benchmark source, exactly as it would as a provider, per CLAUDE.md §1.5's instruction
+against circumventing a control (a broken certificate chain is not "public" access).
 
-- **Primary:** receiving-country central bank published daily indicative rate.
-- **Secondary:** best provider rate observed on the day, as a dependency-free robustness check.
-- Store both. Parameterise the derived layer by benchmark choice so a referee who dislikes one
-  can re-run with the other.
+**What a central bank's published indicative rate actually is.** This is not a live
+interbank mid-market rate, and should never be described as one. It is the rate the bank
+itself publishes for its own reference purposes — typically its own buy/sell/mid quotes for
+its own counter transactions, sometimes doubling as an official reference for customs or
+statistical use. For currencies with no deep interbank market — every currency this project
+covers — this published figure is usually the most authoritative public reference available,
+but it embeds whatever margin or methodology the issuing bank itself uses to set it, and may
+lag actual market conditions. Treat it as "the best available public reference for this
+currency," not as a neutral wholesale rate that exists independently of any one institution's
+judgement. `benchmark_source` records which bank published the rate used; `benchmark_fx_rate`
+is archived exactly as raw as `provider_fx_rate` — both are observed figures, never assumed or
+derived from each other.
 
-Whatever is chosen, the benchmark series is archived daily alongside the quotes and is part of
+**Secondary: best observed provider rate, retained from the first collection run.** Store both
+`benchmark_fx_rate` (central bank) and, where available, the best provider rate observed on the
+same day, as a dependency-free robustness check. This does not change which rate the primary
+cost figures are computed against — it is stored alongside so a referee who dislikes the
+primary choice can recompute with the other, per the original framing this decision confirms.
+
+Whatever the choice, the benchmark series is archived daily alongside the quotes and is part of
 the release. A cost figure whose benchmark cannot be reproduced is not reproducible.
 
 ### 2.4 FX margin

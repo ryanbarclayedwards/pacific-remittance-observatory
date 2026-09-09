@@ -67,7 +67,7 @@ itself a contribution.
 ## Session 4 — one Tier 1 connector
 
 A bank. Published daily FX table plus published fee schedule, reconstructed arithmetically.
-Australia → Tonga, A$200.
+**New Zealand → Tonga, NZ$200, via ANZ New Zealand.**
 
 ```
 fetch → hash → archive → parse → normalise → validate → append
@@ -75,6 +75,14 @@ fetch → hash → archive → parse → normalise → validate → append
 
 Tier 1 first because a bank's rate table survives for months while a calculator breaks
 weekly, and you need one thing that works before you have anything that breaks.
+
+**Amended 2026-09-09** (maintainer decision on `reports/01-triage.md` §5.1, option (b)). Round 1
+triage found exactly one confirmed Tier 1 bank — ANZ New Zealand — and it is NZ-origin, not
+AU-origin; no AU-origin bank reached confirmed Tier 1. Rather than wait on a browser-based
+re-check of the AU-origin candidates, the corridor changes to NZ → Tonga so Session 4 proves the
+pipeline now. This does not change CLAIMS.md §F's Tonga-first reasoning, only the origin
+country; AU–Fiji remains the second target unchanged. AU-origin bank coverage is deferred to a
+later session, per `reports/01-triage.md` §5.1.
 
 ---
 
