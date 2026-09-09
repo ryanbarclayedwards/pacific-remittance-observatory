@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://devpolicy.org/pro/schema/observation.schema.json",
+  "title": "Remittance price observation",
+  "description": "One observation = one service option, one corridor, one amount, one collection event. DRAFT v0.1 - reconcile against the 2023 audit files before freezing.",
+  "type": "object",
+  "required": [
+    "observation_id", "collection_run_id", "collected_at",
+    "collection_method", "source_system", "source_url",
+    "connector_id", "connector_version", "methodology_version",
+    "origin_country_iso3", "origin_currency",
+    "destination_country_iso3", "destination_currency",
+    "amount_sent", "amount_sent_includes_fee",
+    "provider_id", "provider_name_raw",
+    "availability_status", "raw_payload_sha256"
+  ],
+  "properties": {
+    "observation_id": { "type": "string" },
+    "collection_run_id": { "type": "string" },
+    "supersedes": { "type": ["string", "null"] },
+    "correction_reason": { "type": ["string", "null"] },
+
+    "collected_at": { "type": "string", "format": "date-time" },
+    "provider_quote_timestamp": { "type": ["string", "null"], "format": "date-time" },
+    "source_last_updated": { "type": ["string", "null"], "format": "date-time" },
+    "quote_validity_text": { "type": ["string", "null"] },
+
+    "collection_method": {
+      "type": "string",
+      "enum": ["published_tariff", "public_quote", "manual_audit"],
+      "description": "published_tariff = reconstructed arithmetically from a public FX table and fee schedule. NEVER present as a live quote."
+    },
+    "source_system": { "type": "string" },
+    "source_url": { "type": "string" },
+    "connector_id": { "type": "string" },
+    "connector_version": { "type": "string" },
+    "methodology_version": { "type": "string" },
+
+    "origin_country_iso3": { "type": "string", "minLength": 3, "maxLength": 3 },
+    "origin_currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+    "destination_country_iso3": { "type": "string", "minLength": 3, "maxLength": 3 },
+    "destination_currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+
+    "amount_sent": { "type": "number", "exclusiveMinimum": 0 },
+    "amount_sent_includes_fee": { "type": ["boolean", "null"] },
+
+    "provider_id": { "type": "string" },
+    "provider_name_raw": { "type": "string" },
+    "provider_name_canonical": { "type": ["string", "null"] },
+    "provider_type": {
+      "type": ["string", "null"],
+      "enum": ["bank", "global_mto", "corridor_specialist", "fintech", "other", null]
+    },
+
+    "option_id": { "type": ["string", "null"] },
+    "option_name_raw": { "type": ["string", "null"] },
+    "funding_method": { "type": ["string", "null"] },
+    "delivery_method": { "type": ["string", "null"] },
+
+    "amount_received": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "fee": { "type": ["number", "null"], "minimum": 0 },
+    "fee_currency": { "type": ["string", "null"] },
+    "fee_is_promotional": { "type": ["boolean", "null"] },
+    "provider_fx_rate": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "benchmark_fx_rate": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "benchmark_source": { "type": ["string", "null"] },
+    "benchmark_observation_id": { "type": ["string", "null"] },
+
+    "speed_text": { "type": ["string", "null"] },
+    "speed_hours_min": { "type": ["number", "null"] },
+    "speed_hours_max": { "type": ["number", "null"] },
+
+    "availability_status": {
+      "type": "string",
+      "enum": ["observed", "no_service", "blocked", "unobservable", "error"]
+    },
+    "status_detail": { "type": ["string", "null"] },
+
+    "raw_payload_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Must resolve to a file under archive/. CI enforces this."
+    },
+    "raw_payload_path": { "type": ["string", "null"] },
+    "notes": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false,
+  "$comment": "Derived fields (cost_pct, fx_margin_pct, ranks, cheapest flags) are NOT stored here. They are computed in the Stata layer from these raw fields, so that a change of definition never requires rewriting history."
+}

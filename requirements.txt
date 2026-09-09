@@ -1,0 +1,6 @@
+httpx
+jsonschema
+pandas
+pyarrow
+pyreadstat
+selectolax
