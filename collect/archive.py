@@ -11,6 +11,7 @@ left to each connector to remember on its own.
 """
 from __future__ import annotations
 
+import base64
 import gzip
 import hashlib
 import json
@@ -100,18 +101,33 @@ def archive_bytes(
     observation row is this value, and the archive path it must resolve to is derived from
     the same hash, so the two can never drift apart.
 
+    Body encoding (fixed Round 4, reports/04-historical.md): a real payload isn't always UTF-8
+    text -- an .xlsx or .pdf source is binary. Round 3's version of this function silently
+    corrupted any non-UTF-8 body via `errors="replace"`, which would have quietly mangled a
+    binary archive on first real use. Text bodies are stored as UTF-8 text as before (encoding
+    "utf-8"); anything that doesn't decode cleanly is stored base64-encoded (encoding "base64")
+    instead, byte-for-byte recoverable either way.
+
     Returns (sha256_hex, archive_path). Idempotent: fetching byte-identical content twice
     writes the same file once.
     """
     fetched_at = fetched_at or datetime.now(timezone.utc)
     sha256 = hashlib.sha256(body).hexdigest()
 
+    try:
+        body_text = body.decode("utf-8")
+        encoding = "utf-8"
+    except UnicodeDecodeError:
+        body_text = base64.b64encode(body).decode("ascii")
+        encoding = "base64"
+
     envelope = {
         "url": url,
         "fetched_at": fetched_at.isoformat(),
         "status_code": status_code,
         "headers": {k: v for k, v in headers.items()},
-        "body": body.decode("utf-8", errors="replace"),
+        "encoding": encoding,
+        "body": body_text,
     }
 
     day_dir = ARCHIVE_ROOT / provider_slug / f"{fetched_at:%Y}" / f"{fetched_at:%m}" / f"{fetched_at:%d}"
@@ -125,11 +141,25 @@ def archive_bytes(
     return sha256, path
 
 
-def read_archived_body(path: Path) -> str:
-    """Read back the raw body from an archived .json.gz file -- used by golden tests to prove
-    a parser runs against exactly what was archived, not a live re-fetch."""
+def read_archived_bytes(path: Path) -> bytes:
+    """Read back the exact raw bytes originally archived, regardless of encoding. The
+    byte-for-byte source of truth -- prefer this over read_archived_body() for anything that
+    isn't known to be text (a spreadsheet, a PDF, an image)."""
     with gzip.open(path, "rt", encoding="utf-8") as f:
         envelope = json.load(f)
+    if envelope.get("encoding") == "base64":
+        return base64.b64decode(envelope["body"])
+    return envelope["body"].encode("utf-8")
+
+
+def read_archived_body(path: Path) -> str:
+    """Read back the raw body as text from an archived .json.gz file -- used by golden tests
+    to prove a parser runs against exactly what was archived, not a live re-fetch. Raises if
+    the archived body is binary (base64-encoded) -- use read_archived_bytes() for that."""
+    with gzip.open(path, "rt", encoding="utf-8") as f:
+        envelope = json.load(f)
+    if envelope.get("encoding") == "base64":
+        raise ValueError(f"{path} holds binary content -- use read_archived_bytes() instead")
     return envelope["body"]
 
 
@@ -148,8 +178,15 @@ def fetch_and_archive(
     sha256, path = archive_bytes(
         provider_slug, url, resp.status_code, dict(resp.headers), resp.content, fetched_at=fetched_at
     )
-    body_text = read_archived_body(path)
-    challenge = detect_challenge(body_text)
+    try:
+        body_text = read_archived_body(path)
+        challenge = detect_challenge(body_text)
+    except ValueError:
+        # Binary content (e.g. a PDF/xlsx fee schedule) -- not text, so not a text-based
+        # challenge page either. The connector calling this is responsible for choosing
+        # read_archived_bytes() instead of relying on .body_text.
+        body_text = ""
+        challenge = None
     return FetchResult(
         url=url,
         status_code=resp.status_code,
