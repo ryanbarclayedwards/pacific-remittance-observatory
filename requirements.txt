@@ -1,5 +1,6 @@
 httpx
 jsonschema
+openpyxl
 pandas
 pyarrow
 pyreadstat
