@@ -1,0 +1,21 @@
+HTTP/2 200 
+date: Wed, 09 Sep 2026 11:25:28 GMT
+content-type: text/html; charset=utf-8
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+permissions-policy: microphone=(), display-capture=()
+link: </_next/static/media/345c85a432359eed-s.p.0zem_9y19rte6.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/47fe1b7cd6e6ed85-s.p.3bh2vc0w-r-ll.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/4b766aa38fdaaae3-s.p.11-gljxdt344a.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/8e451580e5e95631-s.p.27vw08z6_vw0m.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/8e6fa89aa22d24ec-s.p.2o7m9ogm38dql.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/a218039a3287bcfd-s.p.43zbiuwnnoiok.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/c875c6f5d3e977ac-s.p.1h18_wedhzk4h.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/e2334d715941921e-s.p.3o_v2fun1jzxk.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/f30fd2e485acf1bc-s.p.35belnv3c2-b-.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2"
+link: </llms.txt>; rel="alternate"; type="text/markdown"; title="LLM-readable site index", </sitemap.xml>; rel="sitemap"; type="application/xml", </.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"; title="OrbitRemit agent capabilities"
+set-cookie: country=au; Path=/; Expires=Thu, 10 Sep 2026 11:25:27 GMT; Max-Age=86400
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+via: 1.1 google
+strict-transport-security: max-age=31536000
+cf-cache-status: DYNAMIC
+expect-ct: max-age=86400, enforce
+referrer-policy: same-origin
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+server: cloudflare
+cf-ray: a385d51868877504-CBR
+alt-svc: h3=":443"; ma=86400
+

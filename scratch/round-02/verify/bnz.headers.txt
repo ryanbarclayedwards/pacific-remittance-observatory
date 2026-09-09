@@ -1,0 +1,15 @@
+HTTP/2 200 
+content-type: text/html; charset=utf-8
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: sameorigin
+x-content-type-options: nosniff
+x-xss-protection: 1
+cache-control: must-revalidate, no-transform, max-age=120
+expires: Wed, 09 Sep 2026 11:24:41 GMT
+etag: "2d65c44eae84a2de20ba08341ac02e5e-gzip"
+date: Wed, 09 Sep 2026 11:22:41 GMT
+content-length: 31403
+set-cookie: HIDE_COMPONENT_IDS=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0; path=/; HttpOnly; SameSite=Lax
+strict-transport-security: max-age=31536000 ; includeSubDomains ; preload
+akamai-grn: 0.24672817.1788952960.e6f25a01
+

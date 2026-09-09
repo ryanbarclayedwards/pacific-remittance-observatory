@@ -1,0 +1,18 @@
+HTTP/2 200 
+content-type: text/html; charset=UTF-8
+content-length: 51387
+date: Wed, 09 Sep 2026 11:22:42 GMT
+x-frame-options: SAMEORIGIN
+accept-ranges: bytes
+cache-control: max-age=600
+expires: Wed, 09 Sep 2026 11:32:42 GMT
+x-ua-compatible: IE=edge
+content-security-policy: frame-ancestors 'self';
+strict-transport-security: max-age=16070400;
+vary: Accept-Encoding
+x-cache: Miss from cloudfront
+via: 1.1 33fe46ff3d32130fa3d35a8d855b7102.cloudfront.net (CloudFront)
+x-amz-cf-pop: SYD3-P3
+x-amz-cf-id: fMHiQRDWJx3tMVUfrbIp68NrpHibodlTYbKgeGr-PJnIg1jyOJF0bg==
+age: 16035
+

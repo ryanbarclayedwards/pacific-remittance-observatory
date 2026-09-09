@@ -1,0 +1,23 @@
+HTTP/2 200 
+etag: "514bfa78"
+last-modified: Wed, 09 Sep 2026 10:06:39 GMT
+content-type: text/html;charset=utf-8
+cache-control: max-age=60, public
+age: 385
+date: Wed, 09 Sep 2026 11:22:41 GMT
+x-frame-options: SAMEORIGIN
+vary: Accept-Encoding,User-Agent,Origin
+accept-ranges: bytes
+x-content-type-options: nosniff
+access-control-allow-headers: x-requested-with, Content-Type, Origin, authorization, accept, client-security-token
+access-control-max-age: 1000
+access-control-allow-methods: POST, GET, OPTIONS
+content-security-policy: frame-ancestors 'self' https://anz.sharepoint.com;
+x-vhost: publish
+x-dispatcher: dispatcher2apsoutheast2-29625426
+set-cookie: visid_incap_1539045=PWvCsR0uQnS48rkJ78Ev0IFBoWoAAAAAQUIPAAAAAAApoIMiaCN5kbFERz6tCrNN; expires=Wed, 08 Sep 2027 15:28:46 GMT; HttpOnly; path=/; Domain=.anz.com.au; Secure; SameSite=None
+set-cookie: incap_ses_332_1539045=NXeMNK0/SVA3ngir7oCbBIFBoWoAAAAAk5YSOhzNkpmRZ2cmNPYhDw==; path=/; Domain=.anz.com.au; Secure; SameSite=None
+strict-transport-security: max-age=31536000; includeSubDomains
+x-cdn: Imperva
+x-iinfo: 13-38955513-38931974 2cNN RT(1788952961643 14) q(0 0 0 0) r(0 0)
+

@@ -1,0 +1,41 @@
+HTTP/2 200 
+content-type: text/html
+last-modified: Wed, 01 Jul 2026 02:09:29 GMT
+etag: "0c336b3904fce75cc45f249587a9a99b"
+x-amz-server-side-encryption: AES256
+server: AmazonS3
+x-amz-cf-pop: LAX54-P10
+x-amz-cf-id: vOoYl8rXO_avZ2owck_djQRXekzpxsoyscJt_Ns9sEokjILubXxVcQ==
+x-akamai-transformed: 9 20893 0 pmb=mRUM,2
+cache-control: max-age=86400
+expires: Thu, 10 Sep 2026 11:22:44 GMT
+date: Wed, 09 Sep 2026 11:22:44 GMT
+set-cookie: AKCountry=AU; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: AKZip=; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: AKRegioncode=ACT; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: AKCity=CANBERRA; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: AKAreacode=; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: AKCounty=; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: WUCountryCookie_=AU; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: WULanguageCookie_=en; expires=Tue, 08-Dec-2026 11:22:44 GMT; path=/; domain=westernunion.com
+set-cookie: AK_TLS_Version=tls1.3; path=/; domain=.westernunion.com
+server-timing: cdn-cache; desc=HIT
+server-timing: edge; dur=155
+server-timing: origin; dur=0
+x-akam-sw-version: 0.5.0
+set-cookie: akacd_www_Phased_Release=1788953264~rv=98~id=036720d5f9bc80452b78bf7c198c56da; path=/; Expires=Wed, 09 Sep 2026 11:27:44 GMT; Secure; SameSite=None
+set-cookie: akavpau_en=1788953264~id=e1dbaadeeaabb8c3b9af0d56ba5ad675; Path=/; HttpOnly; Secure; SameSite=None
+set-cookie: resolution_height=; path=/; domain=.www.westernunion.com;
+set-cookie: resolution_width=; path=/; domain=.www.westernunion.com;
+set-cookie: is_tablet=false; path=/; domain=.www.westernunion.com;
+set-cookie: is_mobile=false; path=/; domain=.www.westernunion.com;
+access-control-max-age: 86400
+access-control-allow-credentials: true
+access-control-allow-headers: 
+access-control-allow-methods: POST, GET, PUT, PATCH, DELETE, OPTIONS
+access-control-allow-origin: 
+strict-transport-security: max-age=86400 ; includeSubDomains
+set-cookie: _abck=11C93DDEDE17A7B32576E76C430DA755~-1~YAAQYEZIaBNmDoWgAQAA8uznhRCZ4lhps9pPFvx+YeRXwUEDcuKH/zX5PLNkY3S7tq67MQkbY71qob7CdEZHVTP+Ao2+b+x3G2qrP69J090Z/tU2lhfBOl+K7tW94r+D1lZ3kiIm/l3rD3P93NP43yjiE+pS3n643xQOC+SoVTrkD3Q+kYnicJrRA3y0ZNjSB3qVK1N+n7EbxALPQNW7udc41pDLR9pZJlpJKvzIVk6EtF/Lgmxwd9lFGTGRz9Eo1yhA35SMv08I0z5Tl83qaFeUnop7vwUe0H3uFlExR4QmhzbLT/SqyTxPkqFPhiK4AZSR+dPql74Cw7xrwLPLwDXRKkRuUQaTj+tCsJst8JjLnE+cNbrRSObkzR77r0nqJo4LLu9TmN61lOFTQhl4CjXFrcXOiTuqUbRq9a6QP3aQ1wnWr5Bd5Xq9BaNGEP7/bjwqmpUFyHUK9/8=~-1~-1~-1~-1~-1; Domain=.westernunion.com; Path=/; Expires=Thu, 09 Sep 2027 11:22:44 GMT; Max-Age=31536000; Secure
+set-cookie: bm_sz=F139D5E5973C5B522134B6B1B3E251F4~YAAQYEZIaBRmDoWgAQAA8uznhQFZsEAdDW2eS5HKTXcpPS7xbdDxmOAvHMkp9GP+o90mVC7QnZcwAZH+BOA5i4/EGVuWOv1wPMngCYbogaYDo9i342CcGvWKct3IVDLziY+bjSy1uB7yBEQ5q+PUs+URruFMS9F797RjcdkMAvB91DDBxyM1QLsbnoK6njSHV4daTiyrTPA4XH5OutArBKqt7OYfyN82vcWXS2scziimMT98kqJfqUnv2owKNzI6ma4/DNFW2ybttFxslZdJ9mW02VJY11psYAEzAAKViEt1VCuqf5ami0p+kY3ONajMFS0dzdv9HGvCHeDKq+/6jNyEVbVGT3nYo4iy8FzwRjSk79VXh2+p91Xcxock~3425328~3552819; Domain=.westernunion.com; Path=/; Expires=Wed, 09 Sep 2026 15:22:44 GMT; Max-Age=14400
+server-timing: ak_p; desc="1788952964094_1749567072_7782475_15509_43395_9_31_15";dur=1
+

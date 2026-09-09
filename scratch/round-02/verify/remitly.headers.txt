@@ -1,0 +1,49 @@
+HTTP/2 301 
+content-type: text/html
+content-length: 166
+location: https://www.remitly.com/au/en
+date: Wed, 09 Sep 2026 11:22:42 GMT
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+x-envoy-upstream-service-time: 0
+server: istio-envoy
+x-cache: Miss from cloudfront
+via: 1.1 18973cd357a68e16bd20873be51e8596.cloudfront.net (CloudFront)
+x-amz-cf-pop: SYD62-P1
+alt-svc: h3=":443"; ma=86400
+x-amz-cf-id: ETQxSYdPt03RLrbjHiisZiUOJgDiknvQd_dXEsn3IYFlcMNKBeM3sw==
+vary: Origin
+
+HTTP/2 200 
+content-type: text/html; charset=utf-8
+date: Wed, 09 Sep 2026 11:22:42 GMT
+server: istio-envoy
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+content-security-policy: default-src 'self';base-uri 'none';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' https: data: https://cdn.remitly.com https://*.doubleclick.net/ https://www.facebook.com https://*.google.com https://*.google-analytics.com https://www.googletagmanager.com https://*.gstatic.com/ https://getrockerbox.com/ https://media.remitly.io https://impressions.onelink.me;object-src 'none';script-src https: 'nonce-814eadac1e4f46d9af0c0d6d2bb4de0675f1f451e1591b662d34bcb18e2c2d3e' 'strict-dynamic';script-src-attr 'none';style-src https://cdn.remitly.com https://media.remitly.io https://cdn.fonts.net https://bigidcmp.cloud 'nonce-814eadac1e4f46d9af0c0d6d2bb4de0675f1f451e1591b662d34bcb18e2c2d3e';upgrade-insecure-requests;manifest-src data:;style-src-elem https://*.gstatic.com/ https://media.remitly.io https://cdn.fonts.net https://fonts.googleapis.com 'nonce-814eadac1e4f46d9af0c0d6d2bb4de0675f1f451e1591b662d34bcb18e2c2d3e' https://bigidcmp.cloud;style-src-attr 'none';connect-src 'self' https://api2.branch.io/ https://bigidcmp.cloud https://api.bigidcmp.cloud https://cdn.remitly.com https://remitlyweb-assets-prod.int.remitly.com/ https://*.doubleclick.net/ https://www.googletagmanager.com https://sessions.bugsnag.com https://notify.bugsnag.com https://bam.nr-data.net https://uel.remitly.io https://locations.remitly.io https://translate.googleapis.com/ https://*.clarity.ms https://www.facebook.com https://connect.facebook.net https://cdn.siftscience.com https://cdn.fonts.net https://*.google.com https://www.googleadservices.com https://*.google-analytics.com https://api.remitly.io https://parasol.remitly.io https://wa.onelink.me/v1/onelink https://analytics.tiktok.com https://analytics-ipv6.tiktokw.us https://media.remitly.io https://*.snapchat.com https://sc-static.net https://bat.bing.com https://bat.bing.net https://px.ads.linkedin.com https://pixel-config.reddit.com https://www.redditstatic.com https://conversions-config.reddit.com https://*.appsflyersdk.com https://*.amazon-adsystem.com https://ara.paa-reporting-advertising.amazon https://*.taboola.com https://widget.trustpilot.com/ https://*.adsrvr.org https://*.prod.uidapi.com https://prod.uidapi.com https://*.statsig.com https://*.statsigapi.net https://*.statsigcdn.com https://featuregates.org https://featureassets.org https://assetsconfigcdn.org https://prodregistryv2.org https://cloudflare-dns.com https://beyondwickedmapping.org;frame-src https://*.amazon-adsystem.com https://*.doubleclick.net/ https://www.recaptcha.net/recaptcha/ https://remitly-3pjs.com https://www.googletagmanager.com https://www.facebook.com https://www.youtube.com https://*.snapchat.com https://sc-static.net https://widget.trustpilot.com/ https://*.adsrvr.org https://*.prod.uidapi.com https://prod.uidapi.com;worker-src 'self';media-src 'self' https:;report-uri https://www.remitly.com/csp_report_preauth
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+etag: W/"56726-+q9aBjA6KI1yG2oCNRYTIpzRg48"
+origin-agent-cluster: ?1
+set-cookie: cookie_consent=; Max-Age=0; Path=/; Expires=Wed, 09 Sep 2026 11:22:42 GMT; Secure; SameSite=Lax
+set-cookie: c_policy=NONE; Path=/; HttpOnly; Secure; SameSite=Lax
+set-cookie: pm_sub=true; Path=/; Secure; SameSite=Lax
+set-cookie: msub_policy=show%3Dfalse%26preselect%3Dtrue; Path=/; Secure; SameSite=Lax
+set-cookie: de_id=3RoCMCw84sfRElpaVaPA4fx7Lwm6eSugqkmy25d4SjBqMMScXt4oIdiXwNXooMNOwEDfLWMBKxNiE8Dxdadc0TqmJsbo7tD7GCeRZ8rVaAE1; Max-Age=315360000; Path=/; Expires=Sat, 06 Sep 2036 11:22:42 GMT; Secure; SameSite=None
+set-cookie: de_hash=4Yjmc00mqDCeYWCiGpuMDt; Max-Age=315360000; Path=/; Expires=Sat, 06 Sep 2036 11:22:42 GMT; Secure; SameSite=None
+set-cookie: promoSourcePageId=babd1f05-8fed-49e2-aa96-11c471fbb9be; Max-Age=315360000; Path=/; Expires=Sat, 06 Sep 2036 11:22:42 GMT; HttpOnly; Secure; SameSite=Lax
+set-cookie: registration_segment=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=Lax
+vary: Accept-Encoding
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-envoy-upstream-service-time: 140
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-xss-protection: 0
+x-cache: Miss from cloudfront
+via: 1.1 18973cd357a68e16bd20873be51e8596.cloudfront.net (CloudFront)
+x-amz-cf-pop: SYD62-P1
+alt-svc: h3=":443"; ma=86400
+x-amz-cf-id: 4O-f2uo34ngkVOwM5javDRX0EvFH2iJYIHWMqiump52QvRRoncwYyQ==
+vary: Origin
+
