@@ -23,9 +23,14 @@ import httpx
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ARCHIVE_ROOT = REPO_ROOT / "archive"
 
+# Round 4 correction (reports/04-historical.md): the repository URL previously here
+# ("github.com/devpolicy/...") was a placeholder that was never actually verified as real --
+# flagged and removed rather than continuing to send an unverified claim to every site this
+# project fetches from. Replace with the real repository URL once the maintainer publishes it
+# (CLAUDE.md section 1.5 requires an honest contact URL, not a plausible-looking one).
 USER_AGENT = (
     "PacificRemittanceObservatory/0.1 "
-    "(+https://github.com/devpolicy/pacific-remittance-observatory; research@devpolicy.org)"
+    "(Development Policy Centre, ANU -- repository URL to be added once published)"
 )
 
 # Strong, structural phrases specific to known bot-challenge/interstitial products. Deliberately
