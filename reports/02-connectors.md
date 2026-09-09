@@ -12,9 +12,11 @@ workaround for a block. This report follows the structure in `docs/REPORTING.md`
 fixed after Round 1 — see that file's changelog) and assumes no memory of this session.
 
 **Outcome in one line:** Task B (NRBT) is built, tested, run live, and validated end to end.
-Task A (ANZ NZ) is blocked — its FX rate table returns a bot challenge to an honest HTTP client,
-contradicting Round 1's finding. This report asks the maintainer how to proceed rather than
-picking a new provider or corridor unilaterally.
+Task A (ANZ NZ) is blocked; a maintainer-directed raw-fetch verification sweep of every other
+Tier 1/2 candidate then found the real problem is broader than one provider — most bank rate
+pages are client-rendered, not bot-walled, which makes true Tier 1 rarer than `PROVIDERS.md`
+assumed. Nothing survives the sweep that fits the current NZ→Tonga Tier 1 corridor, so Task A
+did not run this round — reported, not substituted for.
 
 ---
 
@@ -64,6 +66,18 @@ picking a new provider or corridor unilaterally.
 10. Committed after each checkpoint (evidence → connector+tests → live run+validator fix →
     historical assessment → this report), so the round has usable, working output at every
     point, not just at the end.
+11. Published this report and asked the maintainer how to proceed on the blocked Task A, with
+    four options, no recommendation pressed.
+12. On the maintainer's direction: ran a raw-fetch verification sweep of every other Round 1
+    Tier 1/2 bank/MTO candidate (ten sites, one honest fetch each, no retries, no browser),
+    saved to `scratch/round-02/verify/`, checking specifically for bot-management infrastructure
+    and whether target rate figures are present in raw bytes or only after JavaScript.
+13. Added a permanent `verification_method` column (`raw_fetch` / `webfetch_summary`) to every
+    row in `PROVIDERS.md`, corrected several rows the sweep directly contradicted (Wise's
+    "confirmed for Fiji" claim didn't survive re-reading Round 1's own evidence; OrbitRemit
+    upgraded on genuine raw-byte evidence), and committed the sweep as its own checkpoint.
+14. Rewrote this report's §5.1 with the sweep's findings and their implication for the Tier 1
+    premise generally, per the maintainer's explicit instruction — see below.
 
 ---
 
@@ -166,29 +180,80 @@ rules out. `WebFetch` is not a reliable proxy for what an honest automated colle
 actually observe. This is the concrete case Round 2's evidence-discipline change was written to
 catch, and it caught it.
 
-**Options:**
-- **(a)** Reclassify ANZ NZ's FX table specifically as `blocked` (done, in `PROVIDERS.md`), keep
-  the fee schedule's Tier 1-observable status, and pick a different confirmed-Tier-1 bank for
-  Task A. The candidate pool needs re-establishing with fresh, honest fetches first — Round 1's
-  next-best NZ candidate, Kiwibank, was flagged "Tier 1 (probable)" with its numeric rate
-  JS-injected, which is exactly the kind of finding that turned out unreliable here. Checking it
-  (or any other bank) would mean touching a provider beyond what this round approved — a new
-  decision, not something to do unilaterally.
-- **(b)** Revisit AU-origin banks after all (the original SPRINT-01 target before Round 1's
-  §5.1 amendment), now insisting on fresh honest fetches rather than Round 1's WebFetch-based
-  findings for each one before committing to a corridor again.
-- **(c)** Treat NZ→Tonga as still the right corridor but source the *quote* differently — e.g.
-  a Tier 2 public-quote provider reaching Tonga instead of a Tier 1 bank tariff — which changes
-  Session 4's own stated rationale (Tier 1 first, because a bank's rate table is stable and a
-  calculator is brittle) and shouldn't be adopted quietly.
-- **(d)** Pause Task A this round; Task B stands alone as this round's delivered work, and Task
-  A resumes as a Round 3 concern once a genuinely fetchable Tier 1 (or reconsidered Tier 2)
-  source is chosen.
+**The maintainer's response to this finding, in full**, was not to pick a replacement provider —
+it was to question whether the triage *method* itself is sound, on the observed pattern that
+ANZ NZ (Incapsula), ASB (connection reset) and Westpac NZ (Akamai 403) are three commercial
+banks with three different bot walls against three different Round 1 checks. The instruction:
+run a raw-fetch verification sweep — one honest fetch each, no retries, no browser, no crawling
+— across every remaining Tier 1/2 candidate before building anything, add a permanent
+`verification_method` column to `PROVIDERS.md` distinguishing `raw_fetch` from
+`webfetch_summary`, and only build Task A this round if something survives the sweep with real
+numbers in the raw bytes.
 
-No recommendation is pressed here beyond flagging that (a) requires touching a new provider,
-which needs explicit sign-off given this round's "don't touch any other provider" constraint —
-this is exactly the kind of decision that belongs to the maintainer, not an agent working to a
-fixed brief.
+**The sweep.** Ten candidates, one fetch each, saved to `scratch/round-02/verify/`: Kiwibank,
+BNZ, ANZ (Australia), Commonwealth Bank, NAB, St. George, Remitly, Wise, Western Union,
+OrbitRemit. (ANZ NZ's fee schedule was excluded — already confirmed open earlier this round, no
+need to re-fetch it.)
+
+| Candidate | HTTP | Bot-management infra detected | Real content or challenge? | Target numbers in raw bytes? |
+|---|---|---|---|---|
+| Kiwibank | 200 | None | Real | **No** — `data-rate="240"` is a widget-row ID, not a rate (same finding as Round 1, now raw-fetch confirmed) |
+| BNZ | 200 | Akamai (`akamai-grn`) | Real | **No** — `window.__PRELOADED_STATE__` inspected directly; contains nav/feature-flags only, no rate table |
+| ANZ (Australia) | 200 | Incapsula (`visid_incap_`, `x-cdn: Imperva`) — present but did not challenge | Real | **No** — no currency codes anywhere in raw HTML |
+| Commonwealth Bank | 200 | Cloudflare (`__cf_bm`) | Real | **No** — matches Round 1's own direct `curl` finding |
+| NAB | 200 | Akamai Bot Manager (`_abck`, `bm_sz`, `akacd_`) — present but did not challenge | Real | **No** |
+| St. George | 200 | None | Real | **No** — Round 1's "TOP" sighting was a false positive (HTML comment `SBGRP TOPNavigation`) |
+| Remitly | 200 | None (istio-envoy) | Real | **No** — expected; a Tier 2 calculator needs interactive input |
+| Wise | 200 | Cloudflare (`__cf_bm`) | Real | **No** — TOP/FJD appear only in a currency-catalogue metadata blob, not a computed rate. **Corrects Round 1**: its "confirmed for Fiji" claim traces to a worked example that was actually AUD→PHP, not Fiji |
+| Western Union | 200 | Akamai Bot Manager (`_abck`, `bm_sz`) — present but did not challenge | Real | **No** — FJD appears only as a currency-picker dropdown label |
+| OrbitRemit | 200 | Cloudflare | Real | **Yes** — meta description on `/currency-converter/aud-to-fjd` and `/currency-converter/aud-to-top` states a real figure server-side (`$1 AUD = 1.57014 FJD`, `$1 AUD = 1.69237 TOP`), no JS required |
+
+**What this actually shows — the implication for the Tier 1 premise, made explicit.** It is
+*not* that commercial banks are systematically bot-walled shut. Nine of ten candidates returned
+real, unblocked content — several through Incapsula, Akamai Bot Manager or Cloudflare Bot
+Management infrastructure that is demonstrably present (visible in cookies and headers) but
+simply didn't challenge a plain, honestly-identified GET. Only ANZ NZ's specific rate-table
+endpoint issued an actual, unpassable challenge to this project's traffic. **The real, more
+common failure mode is a different one entirely: modern bank websites are overwhelmingly
+client-rendered.** The rate table itself is fetched by client-side JavaScript after the page
+loads, not embedded in the server-delivered HTML. A "boring" collector (`requests`/`httpx`,
+no browser — CLAUDE.md §4's explicit preference) receives a real page and no rate, every time,
+for every bank checked except Kiwibank's near-miss (a widget with the right shape but a
+placeholder value) and OrbitRemit (which embeds a real number precisely because it's rendered
+into a `<meta>` tag server-side, seemingly for SEO purposes, not for a collector's benefit).
+
+**This does change the architecture, not just the provider list — the maintainer's own framing
+is correct.** `PROVIDERS.md`'s Tier 1 definition ("public daily FX table... reconstructed
+arithmetically") assumed a table exists in the page a collector fetches. For every bank checked
+this round except Kiwibank's structural near-miss, that assumption is false: the table exists
+only after JavaScript runs. Tier 1 is not blocked shut by adversarial bot walls — it is much
+rarer than `PROVIDERS.md` assumed, because most banks' *architecture*, not their *policy*,
+keeps the rate out of a plain client's reach. Reaching an actual Tier 1 bank rate going forward
+likely means one of: (i) finding a bank whose rate table is still server-rendered (untested and
+possibly rare among the ten checked), (ii) discovering the underlying JSON/XHR endpoint the
+client-side widget itself calls (still "boring" — a static API request, not a browser — but
+real engineering work, and untested this round whether such endpoints are even reachable
+without their own bot-management challenge), or (iii) revising what "Tier 1" means for a bank
+in practice. None of these were pursued this round — per the maintainer's explicit instruction,
+the sweep recorded and did not fix.
+
+**Does anything survive with real numbers in raw bytes? One partial case, and it doesn't fit
+the current corridor.** OrbitRemit's `/currency-converter/aud-to-top` page states a genuine,
+server-rendered rate (`$1 AUD = 1.69237 TOP`) with no JS needed — this is a real survivor by the
+letter of the maintainer's bar. But: it's AUD-origin, not NZD — checking OrbitRemit's own linked
+converter pages found `aud-to-top` but no `nzd-to-top` (the NZD pairs listed are
+`nzd-to-aud/inr/lkr/npr/php/vnd` — no Pacific currencies among them), so it does not serve the
+NZ→Tonga corridor Session 4 currently targets. And the rate is only half a published tariff —
+no fee *amount* was found in raw bytes anywhere on the page (only generic "fixed transfer fees"
+text), so even for AU→Tonga this doesn't fully close a `published_tariff` reconstruction from
+raw bytes alone; it would need to be built as Tier 2 (`public_quote`), which is what
+`PROVIDERS.md` already calls it.
+
+**Conclusion: nothing survives the sweep that satisfies the current Task A scope (NZ→Tonga,
+Tier 1, via a bank tariff).** Per the maintainer's own instruction, this is reported rather than
+substituted for. Task A did not run this round. `PROVIDERS.md` is updated (verification_method
+column, corrected Wise/OrbitRemit/ANZ AU/Kiwibank/BNZ/Commonwealth Bank/NAB/St. George rows) so
+this finding is structural, not confined to this report.
 
 **What I had to assume, given Task A didn't happen:** nothing about ANZ NZ itself — no fee
 figures, no rate figures, no service-option enumeration were assumed or fabricated in place of
@@ -260,9 +325,10 @@ matches CI. Not run against 3.12 directly this round.
 |---|---|---|
 | `SPRINT-01.md`, `CLAIMS.md` | Edited | Recorded the Session 4 corridor decision (`reports/01-triage.md` §5.1: NZ→Tonga via ANZ NZ) and closed E1 (`reports/01-triage.md` §5.4: central bank primary, best-observed-provider-rate secondary). |
 | `docs/METHODOLOGY.md`, `CHANGELOG.md` | Edited | METHODOLOGY v0.1→v0.2: §2.3 rewritten, decided, documents what a central-bank indicative rate actually is. Version-bump note in CHANGELOG per CLAUDE.md §1.6. |
-| `PROVIDERS.md` | Edited (twice) | OrbitRemit recategorised, MoneyGram set UNRESOLVED, CBSI/BPNG set PENDING_PERMISSION (maintainer decisions); ANZ NZ's FX-table row corrected to BLOCKED after this round's fresh fetch. |
+| `PROVIDERS.md` | Edited (three times) | OrbitRemit recategorised, MoneyGram set UNRESOLVED, CBSI/BPNG set PENDING_PERMISSION (maintainer decisions); ANZ NZ's FX-table row corrected to BLOCKED; then a `verification_method` column added to every row, with Wise/OrbitRemit/ANZ AU/Kiwibank/BNZ/Commonwealth Bank/NAB/St. George rows corrected or strengthened per the raw-fetch sweep. |
 | `docs/REPORTING.md` | Edited | Subsection-numbering convention fixed (maintainer instruction). |
-| `scratch/round-02/*` | Created | Evidence: the ANZ NZ block (raw challenge-page bytes + write-up), the historical-file assessment + the file itself. |
+| `scratch/round-02/*.md`, `scratch/round-02/nrbt-historical-rates.xlsx` | Created | Evidence: the ANZ NZ block (raw challenge-page bytes + write-up), the historical-file assessment + the file itself. |
+| `scratch/round-02/verify/*` | Created | The ten-candidate raw-fetch verification sweep: response headers and bodies, one honest fetch each. |
 | `tests/fixtures/anz-nz/fees.raw.html`, `tests/fixtures/nrbt/*` | Created | Fresh raw fetches, per Round 2's evidence-discipline change. The NRBT one is a golden-test fixture; the ANZ NZ fee page is evidence only (no connector built against it yet). |
 | `collect/archive.py`, `collect/store.py`, `collect/run.py`, `collect/report_failures.py` | Created | Shared plumbing: fetch, hash, archive, append-only store writer, connector registry/CLI, minimal failure-reporting stub. |
 | `collect/benchmarks/nrbt/connector.py` | Created | The NRBT benchmark connector (Task B). |
@@ -315,26 +381,61 @@ not duplicated in `CLAIMS.md`.
 - **`report_failures.py` is untested against a real failure** — this round's one live run
   succeeded, so the "no failures" path is exercised; the failure-reporting path itself has not
   been observed against a genuine `availability_status = error` row from a live run.
+- **The sweep's "bot-management infrastructure present but did not challenge" reading is based
+  on headers and cookies (Incapsula/Akamai/Cloudflare fingerprints), not on knowing those
+  vendors' actual decision logic.** It's possible some of these requests were one lucky roll
+  each — a bot-management product can decide per-request, per-session, or per-IP-reputation, and
+  none of that is visible from one fetch. Treat "didn't challenge this time" as exactly that, not
+  as "never challenges."
+- **The sweep checked one URL per candidate, not the whole site.** A candidate marked "no target
+  numbers in raw bytes" on the specific page checked could still have a server-rendered rate
+  somewhere else not looked at — this happened once already this round (ANZ NZ's fee page is
+  open even though its rate page isn't), so it's a real, not hypothetical, risk.
+- **OrbitRemit's AUD→TOP/AUD→FJD rate-in-meta-description pattern was checked on two pages; it
+  was not confirmed whether this holds for its other currency pairs or whether the specific
+  meta-description mechanism is stable over time** (it reads like an SEO artefact of whatever
+  templating framework renders the page, which could change without notice).
+- **The `verification_method` classification for the 25 `PROVIDERS.md` rows not touched this
+  round is a judgement call, not a fresh check.** Rows kept as `raw_fetch` from Round 1 evidence
+  (MoneyGram, KlickEx, Pacific Way, WanTok Money, TransCrypt) earned that label because their
+  determining fact was a protocol-level observation (a robots.txt disallow, a TLS mismatch, a
+  DNS failure, an HTTP status) rather than WebFetch's content parsing — this is a real
+  distinction, but it was applied by re-reading Round 1's evidence files this round, not by
+  re-fetching them.
 
 ---
 
 ## 10. Recommended next round
 
-**Before any further Task A work:** get the maintainer's direction on §5.1's options. This
-report does not recommend one over the others — it's a genuine reopening of a decision made on
-evidence that didn't hold, and picking a new provider is explicitly outside what this round was
-approved to touch.
+**The open question is now architectural, not a provider pick.** §5.1's sweep found the real
+constraint on Tier 1 is that most bank rate tables are client-rendered, not that banks block
+honest collectors — Kiwibank's widget and OrbitRemit's meta-description rate are the only two
+of eleven checked (across both rounds) with any structural path to a server-rendered number.
+Before Task A resumes, this needs a decision, not another candidate swap:
 
-**Once Task A has a direction:**
-- Whatever bank or provider is chosen, fetch it fresh and honestly *before* committing to it in
-  writing anywhere — this round's whole premise (don't trust Round 1's WebFetch-sourced tier
-  calls without a raw re-check) should now extend to any replacement candidate too, not just the
-  one that already failed.
-- If ANZ NZ's fee schedule is to be reused once a rate source is found (e.g. a different
-  provider supplies the corridor's FX rate while ANZ NZ's own published fee schedule is used
-  for the fee side), that would be mixing two providers' published tariffs into one
-  reconstructed quote — flag this explicitly as a distinct `collection_method` nuance if it
-  comes up; METHODOLOGY doesn't currently address it.
+- **Option 1 — chase the client-side data endpoint.** Kiwibank's `data-rate="240"` reads like a
+  lookup key into a small API; discovering and calling that endpoint directly is still "boring"
+  (a static request, no browser) but is real engineering, not triage, and it's untested whether
+  the endpoint itself sits behind its own access control. Worth a scoped, time-boxed attempt
+  before ruling it out.
+- **Option 2 — accept Tier 1 is rarer than assumed and lower the bar for Session 4.** Build
+  against OrbitRemit's genuinely server-rendered rate as a Tier 2 (`public_quote`) connector
+  instead of a Tier 1 tariff reconstruction — but note it only reaches AU→Tonga, not NZ→Tonga,
+  reopening the origin-country question from Round 1 §5.1 a second time, and changes Session 4's
+  own "Tier 1 first, because tariffs are stable" rationale.
+- **Option 3 — re-scope what "published tariff" means for a bank in practice.** If most banks'
+  rate tables genuinely require an endpoint call rather than a page read, `PROVIDERS.md`'s Tier
+  1 definition (or the collection-method taxonomy in `docs/METHODOLOGY.md` §3) may need a
+  documented middle category — a rate reconstructed from a discovered API rather than a rendered
+  page — rather than treating that as either Tier 1 or Tier 2 by fiat.
+
+No recommendation pressed among these — this is exactly the kind of design call the maintainer's
+own instruction this round said belongs to them.
+
+**Whatever is decided, before it's built:** fetch it fresh and honestly first, in writing,
+before committing to it anywhere else — this round's whole premise (don't trust a claim about
+what's fetchable without a raw check) applies to every future candidate, not just the ones that
+already failed.
 
 **Deliberately left undone this round:**
 - No third connector, no other provider touched, per the brief.
