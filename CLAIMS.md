@@ -20,7 +20,7 @@ dependencies. They matter for the paper and for validation, not for whether the 
 | # | Item | Why blocking |
 |---|---|---|
 | E1 | No benchmark FX rate has been chosen. Every cost figure depends on one. | Cannot compute cost. Decide before Session 4. |
-| P1 | robots.txt and terms not yet checked for any provider. | Cannot write collection code. Session 3. |
+| P1 | robots.txt and terms not yet checked for any provider. | **Resolved 2026-09-09** — robots.txt checked for all 33 PROVIDERS.md candidates plus 6 benchmark sources in Round 1; see PROVIDERS.md. |
 | C2/C3 | 2023 audit figures not yet verified against the maintainer's own files. | Cannot regression-test. Session 2. |
 
 ---
@@ -37,6 +37,8 @@ dependencies. They matter for the paper and for validation, not for whether the 
 | A6 | Recon workbook provider slugs | **REFUTED (partial)** — ≥4 wrong; actual: `ave-paanga-pau`, `klickex-low-priority`, `national-australia-bank`, `wise` | 2026-09-09 |
 | A7 | PNG an available destination | **REFUTED for the AU page** — 10 listed, PNG absent | 2026-09-09 |
 | A8 | Part of a six-region Saver family | VERIFIED | 2026-09-09 |
+| A9 | SaverPacific / Saver Global operates a US-origin page | **REFUTED** — no US-origin page in `saverpacific.com`'s own sitemap (`wp-sitemap-posts-page-1.xml` lists only AU-from, AU-to and NZ-from pages); every plausible URL slug (`send-money-from-usa`, `-united-states`, `-us`) returns 404. Whether a separate Saver Global US domain exists elsewhere is not established — this refutes a `saverpacific.com` US page specifically, not any Saver Global US service anywhere | 2026-09-09 |
+| A10 | SaverPacific operates a NZ-origin page | VERIFIED — `saverpacific.com/send-money-from-new-zealand/` live, comparison widget present (same pattern as the AU page), 10 Pacific destinations listed: Cook Islands, Fiji, Kiribati, Niue, Samoa, Solomon Islands, Timor Leste, Tonga, Tuvalu, Vanuatu (PNG absent, as on the AU page) | 2026-09-09 |
 | A14 | Run by DMA Global and 360 South Pty Ltd, the operator of the first EMPR iteration | VERIFIED as at 2023 (EMPR review, fn 23) | 2026-09-09 |
 | A15 | Uses a mix of real-time and weekly-updated rates | VERIFIED as at 2023 (EMPR review) | 2026-09-09 |
 | A16 | At least one Saver regional site partly DFAT-funded via the ILO ASEAN Triangle programme | VERIFIED as at 2023 | 2026-09-09 |
@@ -51,7 +53,7 @@ https://www.dfat.gov.au/sites/default/files/empr-mid-term-review.pdf — read in
 
 | # | Claim | Status | Checked |
 |---|---|---|---|
-| B1 | SMP has closed; homepage shows a closure notice | **REFUTED as stated** — homepage serves the normal service description. EMPR funding ran 2021–2025 so wind-down is plausible; verify directly | 2026-09-09 |
+| B1 | SMP has closed; homepage shows a closure notice | **VERIFIED** — direct fetch (2026-09-09) serves a static closure notice (`Last-Modified: Wed, 03 Jun 2026`, `cf-cache-status: DYNAMIC`, i.e. not a stale cache hit), corroborated independently by Wayback Machine history: a 33,909-byte page consistent with a full operating site on 11 Jan 2026 shrinks to a 1,716-byte closure notice, matching in size and date, by 6 Jun 2026. This supersedes an earlier same-day entry in this register that read "REFUTED as stated"; that entry could not be reconciled against this evidence and is flagged, not silently overwritten — see `reports/01-triage.md` §6 | 2026-09-09 |
 | B2 | AU, NZ and USA origins (USA → Fiji, Samoa, Tonga only) | VERIFIED, current homepage | 2026-09-09 |
 | B3 | Destinations: Fiji, Kiribati, PNG, Samoa, Solomon Is, Tonga, Tuvalu, Vanuatu — **eight**, not eleven | VERIFIED, current homepage | 2026-09-09 |
 | B4 | Originally managed by Developing Markets Associates from 2009 | VERIFIED | 2026-09-09 |
@@ -81,10 +83,10 @@ this project exists to fix, stated by the programme's own reviewers.
 
 ## D. Provider observability — the live register
 
-Populated in Sprint 1 Session 3. One row per provider, per `PROVIDERS.md`. Every entry needs a
-date checked and a robots.txt determination. Re-check Tier 3 quarterly.
-
-`UNCHECKED` for all candidates as at 2026-09-09.
+Populated in Sprint 1 Session 3 (Round 1, 2026-09-09). One row per provider, per `PROVIDERS.md`
+— the full table lives there, not duplicated here, so it is never at risk of drifting from the
+one place it's actually maintained. Every entry has a date checked and a robots.txt
+determination. Re-check Tier 3 quarterly.
 
 ## E. Open methodological decisions
 
@@ -110,7 +112,7 @@ the reasoning in METHODOLOGY so corridor choice is never mistaken for a sampling
 
 | # | Assumption | Status |
 |---|---|---|
-| G1 | GitHub Actions is free for public repositories | UNCHECKED — verify current terms |
-| G2 | Scheduled workflows are disabled after repository inactivity; unclear whether the workflow's own commits reset the clock | UNCHECKED — **test before relying on it**; add a heartbeat if needed |
+| G1 | GitHub Actions is free for public repositories | **VERIFIED** — GitHub's current docs (`docs.github.com/en/actions/reference/usage-limits-billing-and-administration`, checked 2026-09-09) state Actions usage on standard GitHub-hosted runners is free for public repositories. No explicit numeric ceiling found in the fetched page; full ToS/Acceptable Use Policy not read, so this is "free per current billing docs," not an audited guarantee against abuse-throttling |
+| G2 | Scheduled workflows are disabled after repository inactivity; unclear whether the workflow's own commits reset the clock | **Threshold VERIFIED** — GitHub's current docs (`docs.github.com/en/actions/using-workflows/events-that-trigger-workflows`, checked 2026-09-09) state public-repo scheduled workflows are disabled after 60 days with no repository activity. **Whether the workflow's own commit counts as "activity" remains UNCHECKED** — not settled by GitHub's documentation (the page doesn't define "repository activity"); only circumstantial evidence exists (widely-used community "keepalive" Marketplace actions, no GitHub-staff confirmation found). A concrete empirical test (65+ days, no other repo activity) is specified in `reports/01-triage.md` §5 — a Session 6 concern, not resolved here |
 | G3 | Provider sites may block cloud runner IP ranges | UNCHECKED — test each connector from Actions, not just locally |
 | G4 | Git remains adequate as the store at projected volume | VERIFIED by arithmetic — a few KB per quote, single-digit thousands of files per year |
