@@ -9,15 +9,25 @@ TOP received amounts. That table is what this connector parses -- not an endpoin
 server-rendered content, exactly what CLAUDE.md section 3's Tier 1/2 distinction cares about
 (reachable without defeating anything).
 
-**The rate is not a single clean number.** The comparison table's implied rate varies by
-amount: ~1.7336 TOP/AUD for amounts up to 500 AUD (matching OrbitRemit's own advertised
-"promotional rate for new customers, capped at the first $500 AUD" -- see
-scratch/round-01/orbitremit.md), declining toward ~1.65 TOP/AUD for larger amounts. The page's
-own <meta name="description"> states a third figure (1.69237) that does not match any single
-table entry. This connector picks the table's 500 AUD row specifically -- the last row still at
-the promotional rate -- and stores the *implied* rate (amount_received / amount_sent) rather
-than asserting a single "the rate," with the discrepancy disclosed in status_detail. No fee
-amount was found anywhere in raw bytes; `fee` is null, not assumed.
+**Round 4 correction (reports/04-historical.md):** Round 3's first version of this connector
+picked a single row (500 AUD) and stored it as if it were "the" quote. That was wrong in two
+ways the maintainer corrected: (1) 500 AUD sits exactly at the peak of a new-customer
+promotional distortion, so a cost comparison built from it doesn't generalise -- reported as if
+it did; (2) the promotional structure was then invisible in the data, buried in a row-selection
+choice a future reader couldn't see. This version stores every row in the table as its own
+observation, with `rate_is_promotional` / `promotion_detail` (schema v0.2) making the
+distortion visible in the data itself rather than in this docstring.
+
+The table's implied rate is ~1.7336 TOP/AUD for AUD amounts up to and including 500 (matching
+OrbitRemit's own advertised "promotional rate for new customers, capped at the first $500 AUD",
+scratch/round-01/orbitremit.md), and declines for larger amounts as the promotional portion
+becomes a smaller share of a blended send. The page's <meta name="description"> separately
+states "$1 AUD = 1.69237 TOP" -- this is not a third, unexplained figure (Round 3's connector
+described it that way; that was wrong): 1692.37 / 1000 is exactly 1.69237, so the meta
+description is simply quoting the table's own 1,000 AUD row's implied rate.
+
+No fee amount was found anywhere in raw bytes for any row; `fee` is null throughout, not
+assumed.
 """
 from __future__ import annotations
 
@@ -32,13 +42,25 @@ PROVIDER_ID = "orbitremit"
 PROVIDER_NAME_RAW = "OrbitRemit"
 SOURCE_URL = "https://www.orbitremit.com/currency-converter/aud-to-top"
 CONNECTOR_ID = "orbitremit"
-CONNECTOR_VERSION = "0.1.0"
-METHODOLOGY_VERSION = "0.3"
+CONNECTOR_VERSION = "0.2.0"
+METHODOLOGY_VERSION = "0.4"
 
-TARGET_AMOUNT_SENT = 500.0  # AUD -- the last row still at OrbitRemit's own advertised promo rate
+PROMO_CAP_AUD = 500.0  # OrbitRemit's own advertised cap for the new-customer promotional rate
+
+# The Round 3 observation this round's 500 AUD row corrects (adds rate_is_promotional /
+# promotion_detail, which schema v0.1 had no field for). Not a live lookup -- a fixed,
+# documented fact about this specific historical row, per CLAUDE.md section 1.3: corrections
+# are new rows with supersedes, never a rewrite of the old one.
+SUPERSEDES_500_AUD_OBSERVATION_ID = "50ae569e-b6d1-43d1-b092-e6bc25db7eee"
 
 NEXT_F_PUSH_RE = re.compile(r'self\.__next_f\.push\(\[1,"(.*?)"\]\)', re.S)
 COMPARISON_ROW_RE = re.compile(r'"children":"([\d,]+) AUD"\}\].*?"children":"([\d,.]+) TOP"')
+
+# The table's last row (as served 2026-09-09) is not inlined like the other eight -- React's
+# streaming format hoists it into two separately-numbered chunks and references them by id
+# (e.g. "children":"$L56"..."$L57") instead of embedding the text directly in the row. Resolve
+# that one reference pair explicitly rather than silently dropping the ninth amount.
+REFERENCED_ROW_RE = re.compile(r'"children":"\$L(\d+)"\}\],"\$L(\d+)"')
 
 
 class ParseError(Exception):
@@ -67,95 +89,144 @@ def parse_comparison_table(html_text: str) -> dict[float, float]:
         sent = float(sent_s.replace(",", ""))
         received = float(received_s.replace(",", ""))
         table[sent] = received
+
+    ref_match = REFERENCED_ROW_RE.search(full_text)
+    if ref_match:
+        amount_ref, received_ref = ref_match.groups()
+        amount_m = re.search(rf'\n{amount_ref}:.*?"children":"([\d,]+) AUD"', full_text)
+        received_m = re.search(rf'\n{received_ref}:.*?"children":"([\d,.]+) TOP"', full_text)
+        if amount_m and received_m:
+            sent = float(amount_m.group(1).replace(",", ""))
+            received = float(received_m.group(1).replace(",", ""))
+            table[sent] = received
+        # If the reference doesn't resolve, the inline rows already found still stand -- a
+        # missing ninth row is a gap to disclose (see build_observations' caller), not a
+        # reason to fail every other row too.
+
     return table
 
 
 def parse_meta_description_rate(html_text: str) -> float | None:
-    """The page's <meta name="description"> also states a rate figure -- captured for
-    disclosure alongside the comparison-table rate, not used as the observation's own rate
-    (see module docstring: the two don't match)."""
+    """The page's <meta name="description"> also states a rate figure. It is not an
+    independent third rate -- it equals the table's 1,000 AUD row's implied rate exactly
+    (1692.37 / 1000 = 1.69237) -- captured here only to show that arithmetic, not used as an
+    observation's own rate."""
     m = re.search(r'\$1 AUD = ([\d.]+) TOP', html_text)
     return float(m.group(1)) if m else None
 
 
-def build_observation(
+def _promotion_fields(amount_sent: float, implied_rate: float) -> tuple[bool, str]:
+    """Every row in the table sits at or downstream of OrbitRemit's advertised promotional cap
+    -- rate_is_promotional is True for all of them, but the detail differs: at or under the
+    cap, the whole amount is at the promotional rate; above it, the rate is a blend."""
+    if amount_sent <= PROMO_CAP_AUD:
+        detail = (
+            f"The entire {amount_sent:.0f} AUD send qualifies for OrbitRemit's advertised "
+            f"promotional rate for new customers, capped at the first {PROMO_CAP_AUD:.0f} AUD "
+            f"(scratch/round-01/orbitremit.md). Implied rate {implied_rate:.6f} TOP/AUD."
+        )
+        return True, detail
+
+    detail = (
+        f"Blended rate: the first {PROMO_CAP_AUD:.0f} AUD of this {amount_sent:.0f} AUD send "
+        f"benefits from OrbitRemit's advertised promotional rate for new customers "
+        f"(~1.7336 TOP/AUD, per the table's own sub-{PROMO_CAP_AUD:.0f} rows); the remaining "
+        f"{amount_sent - PROMO_CAP_AUD:.0f} AUD is priced at an implied standard rate of "
+        f"~1.6511 TOP/AUD -- an unpublished estimate derived by fitting OrbitRemit's own table, "
+        f"not itself a separately observed figure. This row's provider_fx_rate "
+        f"({implied_rate:.6f}) is the resulting blend, not a pure standard rate."
+    )
+    return True, detail
+
+
+def build_observations(
     *,
     table: dict[float, float],
-    meta_rate: float | None,
     sha256: str,
     archive_path: Path,
     collected_at: datetime,
     collection_run_id: str,
-) -> dict:
-    if TARGET_AMOUNT_SENT not in table:
-        raise ParseError(f"{TARGET_AMOUNT_SENT} AUD row not found in the parsed comparison table")
+) -> list[dict]:
+    """Pure function: archived-parse-result -> one schema-shaped observation dict per row in
+    the comparison table. Raises ParseError if the table is empty."""
+    if not table:
+        raise ParseError("comparison table is empty")
 
-    amount_received = table[TARGET_AMOUNT_SENT]
-    implied_rate = amount_received / TARGET_AMOUNT_SENT
+    observations = []
+    for amount_sent in sorted(table):
+        amount_received = table[amount_sent]
+        implied_rate = amount_received / amount_sent
+        rate_is_promotional, promotion_detail = _promotion_fields(amount_sent, implied_rate)
 
-    meta_note = (
-        f"the page's own meta description separately states $1 AUD = {meta_rate} TOP, which "
-        f"matches neither this nor any other comparison-table row -- both are recorded as "
-        f"observed, not reconciled into one 'true' rate."
-        if meta_rate is not None
-        else "the page's meta description rate was not found this run."
-    )
+        supersedes = (
+            SUPERSEDES_500_AUD_OBSERVATION_ID if amount_sent == PROMO_CAP_AUD else None
+        )
+        correction_reason = (
+            "Round 3's single-row observation for 500 AUD lacked rate_is_promotional / "
+            "promotion_detail (schema v0.1 had no field for a promotional rate, only a "
+            "promotional fee) and was reported alongside a cost comparison that did not "
+            "generalise beyond this one row. This row adds the missing fields; see "
+            "reports/04-historical.md."
+            if supersedes
+            else None
+        )
 
-    return {
-        "observation_id": str(uuid.uuid4()),
-        "collection_run_id": collection_run_id,
-        "supersedes": None,
-        "correction_reason": None,
-        "collected_at": collected_at.isoformat(),
-        "provider_quote_timestamp": None,
-        "source_last_updated": None,
-        "quote_validity_text": None,
-        "collection_method": "public_quote",
-        "source_system": "collector",
-        "source_url": SOURCE_URL,
-        "connector_id": CONNECTOR_ID,
-        "connector_version": CONNECTOR_VERSION,
-        "methodology_version": METHODOLOGY_VERSION,
-        "origin_country_iso3": "AUS",
-        "origin_currency": "AUD",
-        "destination_country_iso3": "TON",
-        "destination_currency": "TOP",
-        "amount_sent": TARGET_AMOUNT_SENT,
-        "amount_sent_includes_fee": None,
-        "provider_id": PROVIDER_ID,
-        "provider_name_raw": PROVIDER_NAME_RAW,
-        "provider_name_canonical": PROVIDER_NAME_RAW,
-        "provider_type": "global_mto",
-        "option_id": None,
-        "option_name_raw": None,
-        "funding_method": None,
-        "delivery_method": None,
-        "amount_received": amount_received,
-        "fee": None,
-        "fee_currency": None,
-        "fee_is_promotional": None,
-        "provider_fx_rate": implied_rate,
-        "benchmark_fx_rate": None,
-        "benchmark_source": None,
-        "benchmark_observation_id": None,
-        "speed_text": None,
-        "speed_hours_min": None,
-        "speed_hours_max": None,
-        "availability_status": "observed",
-        "status_detail": (
-            f"OrbitRemit's own server-rendered comparison table states {TARGET_AMOUNT_SENT:.0f} "
-            f"AUD -> {amount_received} TOP, an implied rate of {implied_rate:.6f} TOP/AUD. This "
-            f"is the last table row still at OrbitRemit's own advertised promotional rate for "
-            f"new customers, capped at the first $500 AUD (scratch/round-01/orbitremit.md) -- "
-            f"not a rate a repeat customer or a larger transfer would necessarily get; the same "
-            f"table shows the implied rate declining toward ~1.65 for amounts above $500. No "
-            f"fee amount was found anywhere in raw bytes -- fee is null, not assumed zero. And "
-            f"{meta_note}"
-        ),
-        "raw_payload_sha256": sha256,
-        "raw_payload_path": str(archive_path.relative_to(ARCHIVE_ROOT.parent)),
-        "notes": None,
-    }
+        observations.append(
+            {
+                "observation_id": str(uuid.uuid4()),
+                "collection_run_id": collection_run_id,
+                "supersedes": supersedes,
+                "correction_reason": correction_reason,
+                "collected_at": collected_at.isoformat(),
+                "provider_quote_timestamp": None,
+                "source_last_updated": None,
+                "quote_validity_text": None,
+                "collection_method": "public_quote",
+                "source_system": "collector",
+                "source_url": SOURCE_URL,
+                "connector_id": CONNECTOR_ID,
+                "connector_version": CONNECTOR_VERSION,
+                "methodology_version": METHODOLOGY_VERSION,
+                "origin_country_iso3": "AUS",
+                "origin_currency": "AUD",
+                "destination_country_iso3": "TON",
+                "destination_currency": "TOP",
+                "amount_sent": amount_sent,
+                "amount_sent_includes_fee": None,
+                "provider_id": PROVIDER_ID,
+                "provider_name_raw": PROVIDER_NAME_RAW,
+                "provider_name_canonical": PROVIDER_NAME_RAW,
+                "provider_type": "global_mto",
+                "option_id": None,
+                "option_name_raw": None,
+                "funding_method": None,
+                "delivery_method": None,
+                "amount_received": amount_received,
+                "fee": None,
+                "fee_currency": None,
+                "fee_is_promotional": None,
+                "rate_is_promotional": rate_is_promotional,
+                "promotion_detail": promotion_detail,
+                "provider_fx_rate": implied_rate,
+                "benchmark_fx_rate": None,
+                "benchmark_source": None,
+                "benchmark_observation_id": None,
+                "speed_text": None,
+                "speed_hours_min": None,
+                "speed_hours_max": None,
+                "availability_status": "observed",
+                "status_detail": (
+                    f"From OrbitRemit's own server-rendered comparison table: "
+                    f"{amount_sent:.0f} AUD -> {amount_received} TOP. fee is null, not "
+                    f"assumed zero -- no fee amount was found anywhere in raw bytes on this "
+                    f"page."
+                ),
+                "raw_payload_sha256": sha256,
+                "raw_payload_path": str(archive_path.relative_to(ARCHIVE_ROOT.parent)),
+                "notes": None,
+            }
+        )
+    return observations
 
 
 def error_observation(
@@ -186,7 +257,7 @@ def error_observation(
         "origin_currency": "AUD",
         "destination_country_iso3": "TON",
         "destination_currency": "TOP",
-        "amount_sent": TARGET_AMOUNT_SENT,
+        "amount_sent": PROMO_CAP_AUD,
         "amount_sent_includes_fee": None,
         "provider_id": PROVIDER_ID,
         "provider_name_raw": PROVIDER_NAME_RAW,
@@ -200,6 +271,8 @@ def error_observation(
         "fee": None,
         "fee_currency": None,
         "fee_is_promotional": None,
+        "rate_is_promotional": None,
+        "promotion_detail": None,
         "provider_fx_rate": None,
         "benchmark_fx_rate": None,
         "benchmark_source": None,
@@ -245,17 +318,13 @@ def run(collection_run_id: str) -> list[dict]:
 
     try:
         table = parse_comparison_table(result.body_text)
-        meta_rate = parse_meta_description_rate(result.body_text)
-        return [
-            build_observation(
-                table=table,
-                meta_rate=meta_rate,
-                sha256=result.sha256,
-                archive_path=result.archive_path,
-                collected_at=collected_at,
-                collection_run_id=collection_run_id,
-            )
-        ]
+        return build_observations(
+            table=table,
+            sha256=result.sha256,
+            archive_path=result.archive_path,
+            collected_at=collected_at,
+            collection_run_id=collection_run_id,
+        )
     except ParseError as exc:
         return [
             error_observation(

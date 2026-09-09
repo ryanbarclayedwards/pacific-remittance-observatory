@@ -61,8 +61,6 @@
     "fee": { "type": ["number", "null"], "minimum": 0 },
     "fee_currency": { "type": ["string", "null"] },
     "fee_is_promotional": { "type": ["boolean", "null"] },
-    "rate_is_promotional": { "type": ["boolean", "null"] },
-    "promotion_detail": { "type": ["string", "null"] },
     "provider_fx_rate": { "type": ["number", "null"], "exclusiveMinimum": 0 },
     "benchmark_fx_rate": { "type": ["number", "null"], "exclusiveMinimum": 0 },
     "benchmark_source": { "type": ["string", "null"] },
@@ -84,8 +82,11 @@
       "description": "Must resolve to a file under archive/. CI enforces this."
     },
     "raw_payload_path": { "type": ["string", "null"] },
-    "notes": { "type": ["string", "null"] }
+    "notes": { "type": ["string", "null"] },
+
+    "rate_is_promotional": { "type": ["boolean", "null"] },
+    "promotion_detail": { "type": ["string", "null"] }
   },
   "additionalProperties": false,
-  "$comment": "Derived fields (cost_pct, fx_margin_pct, ranks, cheapest flags) are NOT stored here. They are computed in the Stata layer from these raw fields, so that a change of definition never requires rewriting history."
+  "$comment": "Derived fields (cost_pct, fx_margin_pct, ranks, cheapest flags) are NOT stored here. They are computed in the Stata layer from these raw fields, so that a change of definition never requires rewriting history. CONVENTION (added v0.2): new fields always go at the end of this properties list, never inserted where they'd read best logically -- store/observations/*.csv derives its column order from this list, and collect/store.py's schema-growth migration only handles a clean prefix extension. A field inserted mid-list breaks that guarantee for every existing month-file."
 }

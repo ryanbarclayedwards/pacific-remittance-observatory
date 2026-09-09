@@ -20,7 +20,7 @@ SCHEMA_PATH = REPO_ROOT / "schema" / "observation.schema.json"
 STORE_DIR = REPO_ROOT / "store" / "observations"
 ARCHIVE_ROOT = REPO_ROOT / "archive"
 
-BOOLEAN_FIELDS = {"amount_sent_includes_fee", "fee_is_promotional"}
+BOOLEAN_FIELDS = {"amount_sent_includes_fee", "fee_is_promotional", "rate_is_promotional"}
 NUMBER_FIELDS = {
     "amount_sent", "amount_received", "fee", "provider_fx_rate", "benchmark_fx_rate",
     "speed_hours_min", "speed_hours_max",
