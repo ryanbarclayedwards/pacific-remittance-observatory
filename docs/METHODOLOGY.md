@@ -1,11 +1,15 @@
-# METHODOLOGY v0.2 (draft — E1 decided 2026-09-09; other OPEN items remain)
+# METHODOLOGY v0.3 (draft — E1 decided; collection methods extended; other OPEN items remain)
 
 **Do not treat this as settled.** Sections marked OPEN are research decisions for the
 maintainer, not implementation details for an agent.
 
-**Version history:** v0.2 (2026-09-09) decides §2.3 (E1, the benchmark rate) and rewrites it
-accordingly — see CHANGELOG.md for the migration note. All other sections are unchanged from
-v0.1 and remain open as marked.
+**Version history:**
+- v0.3 (2026-09-09) adds `client_api` to §3's collection-method taxonomy, alongside a matching
+  CLAUDE.md §3 revision redefining Tier 1 by reachability rather than markup shape — see
+  CHANGELOG.md for the migration note.
+- v0.2 (2026-09-09) decided §2.3 (E1, the benchmark rate) and rewrote it accordingly.
+
+All other sections are unchanged from v0.1 and remain open as marked.
 
 ## 1. Unit of observation
 
@@ -95,10 +99,22 @@ promotional or waived, and whether a recipient-side or intermediary fee is exclu
 ## 3. Collection methods — never mixed silently
 
 ```
-published_tariff     reconstructed from a public FX table + public fee schedule
+published_tariff     reconstructed from a public FX table + public fee schedule,
+                      read directly from the page's own server-rendered HTML
+client_api           reconstructed the same way, but the number comes from a public
+                      JSON/XHR endpoint the page's own client-side script calls,
+                      fetched directly rather than rendering the page — added
+                      v0.3, 2026-09-09, see CLAUDE.md section 3 and section 1.5's
+                      "what is and is not a workaround"
 public_quote         returned by a public calculator for fixed inputs
 manual_audit         hand-collected (the 2023 vintage)
 ```
+
+`published_tariff` and `client_api` are both Tier 1 (CLAUDE.md §3: reachable without
+defeating anything) but are never folded into one `collection_method` value — a `client_api`
+observation carries a different brittleness profile (an undocumented endpoint can change
+shape without any visible page redesign to warn of it) and that difference must stay visible
+in the data, not just in a connector's source comments.
 
 Every release states the method mix. Any statistic combining methods says so.
 

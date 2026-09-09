@@ -64,25 +64,30 @@ itself a contribution.
 
 ---
 
-## Session 4 — one Tier 1 connector
-
-A bank. Published daily FX table plus published fee schedule, reconstructed arithmetically.
-**New Zealand → Tonga, NZ$200, via ANZ New Zealand.**
+## Session 4 — one Tier 1 (or Tier 2 fallback) connector
 
 ```
 fetch → hash → archive → parse → normalise → validate → append
 ```
 
-Tier 1 first because a bank's rate table survives for months while a calculator breaks
-weekly, and you need one thing that works before you have anything that breaks.
+Tier 1 first where reachable, because a bank's rate table survives for months while a
+calculator breaks weekly, and you need one thing that works before you have anything that
+breaks.
 
-**Amended 2026-09-09** (maintainer decision on `reports/01-triage.md` §5.1, option (b)). Round 1
-triage found exactly one confirmed Tier 1 bank — ANZ New Zealand — and it is NZ-origin, not
-AU-origin; no AU-origin bank reached confirmed Tier 1. Rather than wait on a browser-based
-re-check of the AU-origin candidates, the corridor changes to NZ → Tonga so Session 4 proves the
-pipeline now. This does not change CLAIMS.md §F's Tonga-first reasoning, only the origin
-country; AU–Fiji remains the second target unchanged. AU-origin bank coverage is deferred to a
-later session, per `reports/01-triage.md` §5.1.
+**Corridor policy, decided 2026-09-09 — do not reopen.** The corridor was relitigated twice
+(originally AU→Tonga; amended 2026-09-09 to NZ→Tonga via ANZ NZ per `reports/01-triage.md`
+§5.1 option (b), when that finding didn't survive a raw fetch; reopened again by
+`reports/02-connectors.md`'s verification sweep). That cost more than it was worth: Session 4
+exists to prove the pipeline works end to end, and any corridor proves that equally well. **The
+corridor no longer drives provider selection — provider selection drives the corridor.**
+Whichever provider survives Round 3's endpoint-discovery/fallback work sets the corridor
+Session 4 actually builds. Tonga is preferred only as a tie-breaker, because the National
+Reserve Bank of Tonga benchmark connector is already built and validated
+(`reports/02-connectors.md` §3.2) — not because of B13's usage-share ranking or any other
+substantive reason. If Round 3's provider serves a different destination, the corridor follows
+it and this note is not treated as a reason to force Tonga anyway.
+
+AU–Fiji remains the sprint's second, coverage-driven target, unchanged by this policy.
 
 ---
 

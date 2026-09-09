@@ -62,6 +62,21 @@ courteous request rate. Identify the collector honestly in the user agent, with 
 Where collection is blocked, write `availability_status = blocked` with the reason and stop. A
 recorded gap is a research finding; a circumvented control is a liability for the University.
 
+**What is and is not a workaround.** Bypassing an access control means defeating
+something built to stop you: clearing a bot challenge, solving a CAPTCHA, spoofing a
+user agent to evade a directive, or using credentials you were not given. All
+forbidden.
+
+Calling a public page's own unauthenticated JSON or XHR endpoint is not a workaround.
+That endpoint is as public as the page whose script calls it, and a single honest
+request to it is less intrusive than rendering the whole page. It is permitted, and it
+is preferred where available, because a JSON endpoint is more stable to parse and less
+likely to break on a cosmetic redesign.
+
+Two conditions. Stop if robots.txt disallows the endpoint path. Stop if the endpoint
+requires a key, token or session extracted from page source — that is credential use,
+and it is a different thing.
+
 ### 1.6 Versioned contracts
 
 Do not change `schema/observation.schema.json` or `docs/METHODOLOGY.md` without bumping the
@@ -122,17 +137,32 @@ the store on each run.
 
 Every provider is classified and the classification is published.
 
-**Tier 1 — published tariff.** The provider publishes a daily FX table and a fee schedule.
-A quote is reconstructed arithmetically. Cheapest to collect, most stable, least brittle.
-Most banks fall here. Flag as `collection_method = published_tariff` — never present a
-reconstructed quote as a live one.
+**Tier 1 — reachable without defeating anything.** Defined by reachability, not by markup
+shape (revised 2026-09-09; Round 2 found most bank rate tables are client-rendered, which
+made the original markup-based definition rarer than intended without actually being any
+less publicly reachable). A quote is reconstructed arithmetically from a daily FX rate and a
+fee schedule, both retrievable by a plain, honestly-identified HTTP client — no account, no
+browser, no control defeated. Two forms, each its own `collection_method`:
+
+- `published_tariff` — the number is in the page's own server-rendered HTML.
+- `client_api` — the number comes from a public JSON/XHR endpoint the page's own client-side
+  script calls. Discovering and calling that endpoint directly is not a workaround (see
+  §1.5's "what is and is not a workaround") and is preferred over `published_tariff` where
+  both exist, since an API is more stable to parse and less likely to break on a cosmetic
+  redesign. Carries its own brittleness profile — flag it distinctly, never fold it into
+  `published_tariff`.
+
+Most banks fall here, in one form or the other. Cheapest to collect, most stable, least
+brittle. Never present a reconstructed quote as a live one.
 
 **Tier 2 — public quote calculator.** A public page returns a quote for fixed inputs without
 an account. Flag as `collection_method = public_quote`.
 
-**Tier 3 — unobservable.** No public surface, or one requiring credentials, or one that blocks
-automated access. Flag as `availability_status = unobservable` with the reason and the date
-checked. Re-check quarterly. **Do not attempt to work around this.**
+**Tier 3 — unobservable.** No public surface, one requiring credentials, one that blocks
+automated access, or a `client_api` endpoint that fails either of §1.5's two conditions
+(robots.txt disallow, or a key/token/session required). Flag as `availability_status =
+unobservable` with the reason and the date checked. Re-check quarterly. **Do not attempt to
+work around this.**
 
 Build Tier 1 before Tier 2. Bank tariffs are stable for months; calculators break weekly.
 

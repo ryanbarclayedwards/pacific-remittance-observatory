@@ -15,12 +15,20 @@ alongside this table, not this table alone.
 
 ## Tiers
 
-- **1 — published tariff.** Public daily FX table + public fee schedule. Quote reconstructed
-  arithmetically. Stable, cheap, low-brittleness. Flag `collection_method = published_tariff`.
+- **1 — reachable without defeating anything.** Revised 2026-09-09 (`reports/02-connectors.md`
+  §10, maintainer ruling opening Round 3): defined by reachability, not markup shape. A quote
+  is reconstructed arithmetically from a daily FX rate and a fee schedule, both retrievable by
+  a plain, honestly-identified HTTP client — no account, no browser, no control defeated. Two
+  collection methods: `published_tariff` (server-rendered HTML) and `client_api` (a public
+  JSON/XHR endpoint the page's own script calls, fetched directly — not a workaround, see
+  CLAUDE.md §1.5). Stable, cheap, low-brittleness; `client_api` carries its own brittleness
+  profile and is never folded into `published_tariff`.
 - **2 — public quote calculator.** Public page returns a quote for fixed inputs, no account.
   Flag `collection_method = public_quote`.
-- **3 — unobservable.** No public surface, credentials required, or automated access blocked.
-  Flag `availability_status = unobservable`. Re-check quarterly. Do not work around.
+- **3 — unobservable.** No public surface, credentials required, automated access blocked, or a
+  `client_api` endpoint that fails either of CLAUDE.md §1.5's two conditions (robots.txt
+  disallow, or a key/token/session required). Flag `availability_status = unobservable`.
+  Re-check quarterly. Do not work around.
 
 A tier suffixed **(provisional)** means Round 1 found supporting evidence but did not fully
 exercise the surface (e.g. a calculator confirmed to exist by page text, not by submitting a
