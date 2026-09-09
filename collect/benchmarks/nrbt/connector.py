@@ -22,7 +22,7 @@ from pathlib import Path
 
 from selectolax.parser import HTMLParser
 
-from collect.archive import ARCHIVE_ROOT, archive_bytes, fetch, read_archived_body
+from collect.archive import ARCHIVE_ROOT, fetch_and_archive
 
 PROVIDER_ID = "nrbt"
 PROVIDER_NAME_RAW = "National Reserve Bank of Tonga"
@@ -220,17 +220,29 @@ def error_observation(
 
 
 def run(collection_run_id: str) -> list[dict]:
-    """Live entry point: fetch -> archive -> parse -> normalise. One network call."""
-    collected_at = datetime.now(timezone.utc)
-    resp = fetch(SOURCE_URL)
-    sha256, archive_path = archive_bytes(
-        PROVIDER_ID, SOURCE_URL, resp.status_code, dict(resp.headers), resp.content, fetched_at=collected_at
-    )
+    """Live entry point: fetch -> archive -> check for a challenge -> parse -> normalise.
+    One network call, via the common fetch_and_archive() path (Round 3, section 1.5's
+    challenge-detection requirement)."""
+    result = fetch_and_archive(PROVIDER_ID, SOURCE_URL)
+    collected_at = result.fetched_at
+    sha256, archive_path = result.sha256, result.archive_path
 
-    if resp.status_code != 200:
+    if result.challenge is not None:
         return [
             error_observation(
-                reason=f"HTTP {resp.status_code} fetching {SOURCE_URL}",
+                reason=f"challenge page detected ({result.challenge!r}) fetching {SOURCE_URL}",
+                sha256=sha256,
+                archive_path=archive_path,
+                collected_at=collected_at,
+                collection_run_id=collection_run_id,
+                availability_status="blocked",
+            )
+        ]
+
+    if result.status_code != 200:
+        return [
+            error_observation(
+                reason=f"HTTP {result.status_code} fetching {SOURCE_URL}",
                 sha256=sha256,
                 archive_path=archive_path,
                 collected_at=collected_at,
@@ -239,7 +251,7 @@ def run(collection_run_id: str) -> list[dict]:
             )
         ]
 
-    body = read_archived_body(archive_path)
+    body = result.body_text
     try:
         rates = parse_rates(body)
         last_updated = parse_last_updated(body)
