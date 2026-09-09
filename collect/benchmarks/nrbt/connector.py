@@ -9,9 +9,14 @@ tests/test_nrbt.py runs them offline against a committed fixture, never the netw
 Quote orientation (METHODOLOGY.md section 2.4, "must be standardised and documented"): NRBT
 publishes BUY/MID/SELL as *foreign currency per 1 TOP* (e.g. NZD 0.7210 means 1 TOP = 0.7210
 NZD). This project's benchmark_fx_rate / provider_fx_rate convention is *destination currency
-per 1 origin currency unit* -- for NZ -> Tonga that is TOP per NZD -- so the published MID rate
-is inverted before being stored. Both the raw published figure and the inverted figure are
-recorded in status_detail so the inversion is checkable, not just asserted.
+per 1 origin currency unit* -- so the published MID rate is inverted before being stored, for
+whichever origin currency is requested. Both the raw published figure and the inverted figure
+are recorded in status_detail so the inversion is checkable, not just asserted.
+
+Round 3 (reports/03-endpoints.md): emits one observation per configured origin currency, not
+just NZD. NRBT's page publishes AUD alongside NZD on the same fetch -- once SPRINT-01's corridor
+policy stopped fixing the corridor to NZ->Tonga (any provider that survives sets the corridor),
+there was no reason to keep discarding the AUD figure this connector was already parsing.
 """
 from __future__ import annotations
 
@@ -42,6 +47,14 @@ CURRENCY_NAME_TO_ISO = {
 }
 
 LAST_UPDATED_RE = re.compile(r"Last Updated:\s*([0-9]{1,2} \w+ \d{4})")
+
+# Origin currencies this connector emits a benchmark observation for, and their ISO3 country.
+# Extend deliberately when a new corridor actually needs a new origin currency -- not
+# speculatively for every currency NRBT happens to publish.
+ORIGIN_CURRENCIES = {
+    "NZD": "NZL",
+    "AUD": "AUS",
+}
 
 
 class ParseError(Exception):
@@ -94,18 +107,23 @@ def build_observation(
     archive_path: Path,
     collected_at: datetime,
     collection_run_id: str,
+    origin_currency: str = "NZD",
 ) -> dict:
-    """Pure function: archived-parse-result -> one schema-shaped observation dict for NZD/TOP.
+    """Pure function: archived-parse-result -> one schema-shaped observation dict for
+    <origin_currency>/TOP.
 
-    Raises ParseError if NZD is missing -- the caller turns that into an error observation
-    rather than emitting a row with a guessed rate.
+    Raises ParseError if origin_currency's row is missing -- the caller turns that into an
+    error observation rather than emitting a row with a guessed rate.
     """
-    nzd = rates.get("NZD")
-    if nzd is None:
-        raise ParseError("NZD row not found in parsed rate table")
+    if origin_currency not in ORIGIN_CURRENCIES:
+        raise ParseError(f"origin_currency {origin_currency!r} is not in ORIGIN_CURRENCIES")
 
-    published_mid_nzd_per_top = nzd["mid"]
-    top_per_nzd = 1 / published_mid_nzd_per_top
+    row = rates.get(origin_currency)
+    if row is None:
+        raise ParseError(f"{origin_currency} row not found in parsed rate table")
+
+    published_mid_per_top = row["mid"]
+    top_per_origin = 1 / published_mid_per_top
 
     return {
         "observation_id": str(uuid.uuid4()),
@@ -122,8 +140,8 @@ def build_observation(
         "connector_id": CONNECTOR_ID,
         "connector_version": CONNECTOR_VERSION,
         "methodology_version": METHODOLOGY_VERSION,
-        "origin_country_iso3": "NZL",
-        "origin_currency": "NZD",
+        "origin_country_iso3": ORIGIN_CURRENCIES[origin_currency],
+        "origin_currency": origin_currency,
         "destination_country_iso3": "TON",
         "destination_currency": "TOP",
         "amount_sent": 1.0,
@@ -136,11 +154,11 @@ def build_observation(
         "option_name_raw": None,
         "funding_method": None,
         "delivery_method": None,
-        "amount_received": top_per_nzd,
+        "amount_received": top_per_origin,
         "fee": None,
         "fee_currency": None,
         "fee_is_promotional": None,
-        "provider_fx_rate": top_per_nzd,
+        "provider_fx_rate": top_per_origin,
         "benchmark_fx_rate": None,
         "benchmark_source": None,
         "benchmark_observation_id": None,
@@ -149,12 +167,12 @@ def build_observation(
         "speed_hours_max": None,
         "availability_status": "observed",
         "status_detail": (
-            f"NRBT published BUY {nzd['buy']} / MID {nzd['mid']} / SELL {nzd['sell']} NZD per "
-            f"1 TOP. This row's provider_fx_rate and amount_received are the MID rate inverted "
-            f"to TOP per 1 NZD ({top_per_nzd:.6f}), per METHODOLOGY.md section 2.4's quote-"
-            f"orientation convention. This is a benchmark rate observation, not a transfer "
-            f"quote -- fee and amount_sent_includes_fee are not applicable and are null, not "
-            f"zero."
+            f"NRBT published BUY {row['buy']} / MID {row['mid']} / SELL {row['sell']} "
+            f"{origin_currency} per 1 TOP. This row's provider_fx_rate and amount_received are "
+            f"the MID rate inverted to TOP per 1 {origin_currency} ({top_per_origin:.6f}), per "
+            f"METHODOLOGY.md section 2.4's quote-orientation convention. This is a benchmark "
+            f"rate observation, not a transfer quote -- fee and amount_sent_includes_fee are "
+            f"not applicable and are null, not zero."
         ),
         "raw_payload_sha256": sha256,
         "raw_payload_path": str(archive_path.relative_to(ARCHIVE_ROOT.parent)),
@@ -170,6 +188,7 @@ def error_observation(
     collected_at: datetime,
     collection_run_id: str,
     availability_status: str = "error",
+    origin_currency: str = "NZD",
 ) -> dict:
     return {
         "observation_id": str(uuid.uuid4()),
@@ -186,8 +205,8 @@ def error_observation(
         "connector_id": CONNECTOR_ID,
         "connector_version": CONNECTOR_VERSION,
         "methodology_version": METHODOLOGY_VERSION,
-        "origin_country_iso3": "NZL",
-        "origin_currency": "NZD",
+        "origin_country_iso3": ORIGIN_CURRENCIES.get(origin_currency, "NZL"),
+        "origin_currency": origin_currency,
         "destination_country_iso3": "TON",
         "destination_currency": "TOP",
         "amount_sent": 1.0,
@@ -255,16 +274,6 @@ def run(collection_run_id: str) -> list[dict]:
     try:
         rates = parse_rates(body)
         last_updated = parse_last_updated(body)
-        return [
-            build_observation(
-                rates=rates,
-                last_updated_text=last_updated,
-                sha256=sha256,
-                archive_path=archive_path,
-                collected_at=collected_at,
-                collection_run_id=collection_run_id,
-            )
-        ]
     except ParseError as exc:
         return [
             error_observation(
@@ -276,3 +285,31 @@ def run(collection_run_id: str) -> list[dict]:
                 availability_status="error",
             )
         ]
+
+    observations = []
+    for origin_currency in ORIGIN_CURRENCIES:
+        try:
+            observations.append(
+                build_observation(
+                    rates=rates,
+                    last_updated_text=last_updated,
+                    sha256=sha256,
+                    archive_path=archive_path,
+                    collected_at=collected_at,
+                    collection_run_id=collection_run_id,
+                    origin_currency=origin_currency,
+                )
+            )
+        except ParseError as exc:
+            observations.append(
+                error_observation(
+                    reason=f"parse error: {exc}",
+                    sha256=sha256,
+                    archive_path=archive_path,
+                    collected_at=collected_at,
+                    collection_run_id=collection_run_id,
+                    availability_status="error",
+                    origin_currency=origin_currency,
+                )
+            )
+    return observations

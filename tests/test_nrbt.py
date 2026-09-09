@@ -84,3 +84,27 @@ def test_build_observation_raises_if_nzd_missing():
             collected_at=datetime(2026, 9, 9, tzinfo=timezone.utc),
             collection_run_id="run-test",
         )
+
+
+def test_build_observation_inverts_mid_rate_to_top_per_aud():
+    # Round 3: the connector emits one observation per configured origin currency, not just
+    # NZD -- this is the AUD leg the AU->Tonga (OrbitRemit) corridor needs to close cost_pct.
+    rates = parse_rates(_fixture_text())
+    last_updated = parse_last_updated(_fixture_text())
+    collected_at = datetime(2026, 9, 9, 11, 0, 0, tzinfo=timezone.utc)
+
+    obs = build_observation(
+        rates=rates,
+        last_updated_text=last_updated,
+        sha256="e" * 64,
+        archive_path=ARCHIVE_ROOT / "nrbt" / "2026" / "09" / "09" / ("e" * 64 + ".json.gz"),
+        collected_at=collected_at,
+        collection_run_id="run-test",
+        origin_currency="AUD",
+    )
+
+    expected_top_per_aud = 1 / rates["AUD"]["mid"]
+    assert obs["provider_fx_rate"] == expected_top_per_aud
+    assert obs["origin_currency"] == "AUD"
+    assert obs["origin_country_iso3"] == "AUS"
+    assert obs["destination_currency"] == "TOP"

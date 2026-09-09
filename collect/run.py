@@ -13,10 +13,12 @@ import uuid
 from datetime import datetime, timezone
 
 from collect.benchmarks.nrbt import connector as nrbt_connector
+from collect.orbitremit import connector as orbitremit_connector
 from collect.store import append_observations
 
 CONNECTORS = {
     "benchmarks.nrbt": nrbt_connector,
+    "orbitremit": orbitremit_connector,
 }
 
 
