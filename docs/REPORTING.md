@@ -46,6 +46,12 @@ anyone else needs it.
 
 10. **Recommended next round** — and what was deliberately left undone.
 
+**Subsection numbering.** A section's subsections inherit that section's own number — §5's
+subsections are §5.1, §5.2, and so on, never §4.x under a "## 5." heading or vice versa. Round
+1's report (`reports/01-triage.md`) shipped with exactly that mismatch (a "## 4." heading with
+"### 5.x" subsections) and was not corrected after the fact, per the append-only rule below —
+this note exists so the same slip doesn't recur in a later round.
+
 ## Conventions
 
 - Use Australian English throughout (per CLAUDE.md).
