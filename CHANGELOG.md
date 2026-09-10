@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- `docs/METHODOLOGY.md` v0.6 → v0.7: §4 (freshness) documents collection-cadence drift —
+  GitHub Actions' scheduled trigger is best-effort, confirmed by the collector's first
+  scheduled run landing 2h26m after its 19:00 UTC cron target. `collected_at` is the only
+  trustworthy record of when an observation happened; nothing downstream should assume a
+  fixed daily collection time. `CLAIMS.md` gains G7 recording the measurement. See
+  `reports/06-live.md`.
 - `collect/ingest_2023_audit.py`: `HM_DS_DATA` is no longer a hardcoded absolute path from one
   machine. It now defaults to `~/Desktop/hm-ds/Data` (via `Path.home()`, so no username is
   baked in) and can be overridden with the `HM_DS_DATA_PATH` environment variable. There's no

@@ -1,9 +1,13 @@
-# METHODOLOGY v0.6 (draft — E1 and E2 decided; collection methods extended; E5 remains open)
+# METHODOLOGY v0.7 (draft — E1 and E2 decided; collection methods extended; E5 remains open)
 
 **Do not treat this as settled.** Sections marked OPEN are research decisions for the
 maintainer, not implementation details for an agent.
 
 **Version history:**
+- v0.7 (2026-09-11) documents collection-cadence drift under freshness (§4): GitHub Actions'
+  scheduled trigger is best-effort, confirmed by the collector's first scheduled run landing
+  2h26m after its 19:00 UTC target (`CLAIMS.md` G7). `collected_at`, never the cron schedule,
+  is the record of when an observation happened. See `reports/06-live.md`.
 - v0.6 (2026-09-10) decides archive publication (new §8): `archive/` is published in full,
   reasoned and recorded, with a takedown contact for a specific-file objection. See
   `README.md` for the corresponding public-facing statement and `reports/06-live.md`.
@@ -193,6 +197,15 @@ quote_validity            how long it holds, if disclosed
 ```
 
 Never collapse these. Unknown is `null`, never the collection time.
+
+**Collection cadence drifts — decided, 2026-09-11.** The daily collector runs on GitHub
+Actions' scheduled (`cron`) trigger, which GitHub documents as best-effort. The first
+scheduled run confirmed this concretely: targeted for 19:00 UTC, it actually started at
+21:25:49 UTC, about 2h26m late (`CLAIMS.md` G7). `collected_at` is the only trustworthy
+record of when an observation actually happened — never assume a fixed daily collection
+time from the cron schedule, only a fixed daily collection *attempt*. Any downstream
+analysis that buckets or aligns observations by time of day, not just by date, must use
+`collected_at` and expect it to drift.
 
 ## 5. Rankings
 
