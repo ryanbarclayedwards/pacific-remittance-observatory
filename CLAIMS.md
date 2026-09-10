@@ -21,7 +21,7 @@ dependencies. They matter for the paper and for validation, not for whether the 
 |---|---|---|
 | E1 | No benchmark FX rate has been chosen. Every cost figure depends on one. | Cannot compute cost. Decide before Session 4. |
 | P1 | robots.txt and terms not yet checked for any provider. | **Resolved 2026-09-09** — robots.txt checked for all 33 PROVIDERS.md candidates plus 6 benchmark sources in Round 1; see PROVIDERS.md. |
-| C2/C3 | 2023 audit figures not yet verified against the maintainer's own files. | Cannot regression-test. Session 2. |
+| C2/C3 | 2023 audit figures not yet verified against the maintainer's own files. | **Resolved 2026-09-10** — C2 VERIFIED, C3 REFUTED, both directly against `audit1.csv`/`audit2.csv`. See section C and `reports/04-historical.md` Task A. |
 
 ---
 
@@ -76,9 +76,9 @@ this project exists to fix, stated by the programme's own reviewers.
 
 | # | Claim | Status |
 |---|---|---|
-| C1 | July–Aug 2023 daily audit data held in tidy form | VERIFIED (maintainer) |
-| C2 | 25 Jul 2023 NZ→Tonga 'Ave Pa'anga Pau NZ$200 → TOP 284.10, fee 0, rate 1.42 | UNCHECKED — verify against C1, not the published paper |
-| C3 | 3 Aug 2023 AU–Tonga showed 21 options from 15 RSPs | UNCHECKED — verify against C1 |
+| C1 | July–Aug 2023 daily audit data held in tidy form | **VERIFIED and expanded, 2026-09-10.** Located and ingested (Round 4, `reports/04-historical.md` Task A): two audit waves, not one — `audit1.csv` (2023-03-28 to 2023-04-25, 29 dates) and `audit2.csv` (2023-07-25 to 2023-08-07, 14 dates), both against Send Money Pacific and Saver Pacific. 1,188 Tonga-corridor observations imported; Vanuatu rows in `audit1.csv` exist but weren't ingested this round (no Vanuatu benchmark — see `PROVIDERS.md`) |
+| C2 | 25 Jul 2023 NZ→Tonga 'Ave Pa'anga Pau NZ$200 → TOP 284.10, fee 0, rate 1.42 | **VERIFIED, 2026-09-10** — confirmed directly against the underlying `audit2.csv` row (Saver Pacific, NZTON, 'Ave Pa'anga Pau, 25/07/2023): amountreceived 284.1, Fee 0, FXrate 1.42. Exact match, checked against the primary data as instructed, not the published paper |
+| C3 | 3 Aug 2023 AU–Tonga showed 21 options from 15 RSPs | **REFUTED, 2026-09-10** — the underlying data (`audit2.csv`, 2023-08-03, AUSTON) shows 18 option-level rows (9 per platform × 2 platforms: Send Money Pacific, Saver Pacific), 11 distinct raw MTO/mode options, 9 distinct base providers (7 per individual platform). Not 21 options or 15 RSPs by any grouping checked |
 | C4 | SMP and SaverPacific are independent sources | **REFUTED** — common lineage (A14). The 2023 audit compared two related platforms. Belongs in the paper |
 
 ## D. Provider observability — the live register
