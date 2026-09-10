@@ -1,0 +1,68 @@
+name: collect
+
+# CLAIMS.md G2: scheduled workflows in public repos are disabled after 60 days of repository
+# inactivity (confirmed against GitHub's current docs, Round 1). Whether this workflow's own
+# commits count as "activity" for that clock is still undocumented -- GitHub's docs don't define
+# the term, and it can only really be settled empirically over 65+ days (see
+# scratch/round-01/claims/g2.md for the proposed test). The Commit step below now guarantees a
+# real daily commit either way (a heartbeat marker if collection itself produced nothing to
+# commit, which after Round 5's connection-error fix should be rare but isn't impossible) --
+# this doesn't resolve the open question, it just removes the specific failure mode where an
+# unlucky day with nothing to commit would also be a day with no activity to test against.
+on:
+  schedule:
+    - cron: "0 19 * * *"   # ~05:00 AEST. GitHub cron is best-effort, not punctual.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Never fails the job on a connector failure. A failed connector writes an
+      # observation with availability_status = error and the run continues. Losing a
+      # whole day because one provider changed its markup is the failure mode to avoid.
+      - name: Collect
+        run: python -m collect.run --all
+        continue-on-error: true
+
+      - name: Validate
+        run: python -m normalise.validate --strict
+
+      - name: Commit
+        run: |
+          git config user.name  "pro-collector"
+          git config user.email "noreply@devpolicy.org"
+          git add archive/ store/
+          if git diff --staged --quiet; then
+            echo "Nothing from collection to commit -- writing a heartbeat instead (CLAIMS.md G2)."
+            mkdir -p .heartbeat
+            date -u +%Y-%m-%dT%H:%M:%SZ > .heartbeat/last-run
+            git add .heartbeat/last-run
+            git commit -m "heartbeat: $(date -u +%Y-%m-%d) (collection produced nothing to commit)"
+          else
+            git commit -m "collect: $(date -u +%Y-%m-%d)"
+          fi
+          git push
+
+      # Any connector that errored opens or updates an issue, which is the input to the
+      # repair loop in CLAUDE.md section 4.1.
+      - name: Report failures
+        if: always()
+        run: python -m collect.report_failures
