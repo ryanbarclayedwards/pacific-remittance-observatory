@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://devpolicy.org/pro/schema/observation.schema.json",
   "title": "Remittance price observation",
-  "description": "One observation = one service option, one corridor, one amount, one collection event. DRAFT v0.2 (2026-09-10: added rate_is_promotional, promotion_detail) - reconcile against the 2023 audit files before freezing.",
+  "description": "One observation = one service option, one corridor, one amount, one collection event. DRAFT v0.3 (2026-09-10: added benchmark_is_carried_forward, benchmark_age_days). v0.2 added rate_is_promotional, promotion_detail. Reconciled against the real 2023 audit files in Round 4 (reports/04-historical.md) -- fit cleanly, no distortion, no field without a documented home.",
   "type": "object",
   "required": [
     "observation_id", "collection_run_id", "collected_at",
@@ -85,7 +85,10 @@
     "notes": { "type": ["string", "null"] },
 
     "rate_is_promotional": { "type": ["boolean", "null"] },
-    "promotion_detail": { "type": ["string", "null"] }
+    "promotion_detail": { "type": ["string", "null"] },
+
+    "benchmark_is_carried_forward": { "type": ["boolean", "null"] },
+    "benchmark_age_days": { "type": ["integer", "null"], "minimum": 0 }
   },
   "additionalProperties": false,
   "$comment": "Derived fields (cost_pct, fx_margin_pct, ranks, cheapest flags) are NOT stored here. They are computed in the Stata layer from these raw fields, so that a change of definition never requires rewriting history. CONVENTION (added v0.2): new fields always go at the end of this properties list, never inserted where they'd read best logically -- store/observations/*.csv derives its column order from this list, and collect/store.py's schema-growth migration only handles a clean prefix extension. A field inserted mid-list breaks that guarantee for every existing month-file."

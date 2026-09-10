@@ -25,6 +25,15 @@ Never write a number into the data path that did not come from an archived respo
 
 - Missing value → `null` plus a status code. Never a default, never an interpolation, never a
   value carried forward from a previous run, never a figure recalled from training data.
+- **Exception, maintainer decision 2026-09-10 (`reports/05-live.md`):** a *benchmark* rate may
+  be carried forward from the last published business day when the source publishes none for a
+  given date (a weekend or public holiday) — never silently: the carrying row must set
+  `benchmark_is_carried_forward = true` and `benchmark_age_days` to how stale it is. This
+  applies only to a benchmark (METHODOLOGY.md §2.3), never to a provider's own quote — a
+  provider observation is either genuinely observed that day or `null`, always. The exception
+  exists because losing benchmark coverage to a central bank's publication calendar was judged
+  a worse trade than a flagged approximation; the flag is what keeps it from becoming a silent
+  default.
 - If you are reasoning about what a price *probably* was, stop and open an issue.
 - **No LLM runs inside the collection or normalisation path.** You write and repair the code;
   deterministic code produces the data.

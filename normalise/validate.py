@@ -20,11 +20,17 @@ SCHEMA_PATH = REPO_ROOT / "schema" / "observation.schema.json"
 STORE_DIR = REPO_ROOT / "store" / "observations"
 ARCHIVE_ROOT = REPO_ROOT / "archive"
 
-BOOLEAN_FIELDS = {"amount_sent_includes_fee", "fee_is_promotional", "rate_is_promotional"}
+BOOLEAN_FIELDS = {
+    "amount_sent_includes_fee", "fee_is_promotional", "rate_is_promotional",
+    "benchmark_is_carried_forward",
+}
 NUMBER_FIELDS = {
     "amount_sent", "amount_received", "fee", "provider_fx_rate", "benchmark_fx_rate",
     "speed_hours_min", "speed_hours_max",
 }
+# JSON Schema's "integer" type rejects a Python float (even 5.0) -- these need int(), not
+# float(), or every row with a real value here would fail validation.
+INTEGER_FIELDS = {"benchmark_age_days"}
 
 
 def load_schema() -> dict:
@@ -43,6 +49,9 @@ def row_to_observation(row: dict, schema_props: dict) -> dict:
             continue
         if key in BOOLEAN_FIELDS:
             obs[key] = str(value).strip().lower() in ("true", "1")
+            continue
+        if key in INTEGER_FIELDS:
+            obs[key] = int(float(value))
             continue
         if key in NUMBER_FIELDS:
             obs[key] = float(value)

@@ -1,9 +1,15 @@
-# METHODOLOGY v0.4 (draft — E1 decided; collection methods extended; other OPEN items remain)
+# METHODOLOGY v0.5 (draft — E1 and E2 decided; collection methods extended; E5 remains open)
 
 **Do not treat this as settled.** Sections marked OPEN are research decisions for the
 maintainer, not implementation details for an agent.
 
 **Version history:**
+- v0.5 (2026-09-10) resolves E2 (§2.2: fee-inclusion is per-observation, never inferred —
+  proven necessary, not just cautious, by a real mixed-convention case in the 2023 audit);
+  documents benchmark carry-forward on non-business days as a flagged, CLAUDE.md §1.1-excepted
+  policy (§2.3); and records the benchmark-sensitivity finding as a quantified property (§2.3:
+  benchmark choice moves cost levels by ~0.44pp on average but leaves rankings 99.8%
+  undisturbed). See `reports/05-live.md`.
 - v0.4 (2026-09-10) documents NRBT's published MID as the midpoint of the bank's own dealing
   spread, not an interbank mid-market rate, as a known limitation (§2.3) — a Round 4 correction
   after Round 3 treated a benchmark comparison as more authoritative than the underlying rate
@@ -39,8 +45,21 @@ implicit_cost_value     = benchmark_receive_value − amount_received
 cost_pct                = implicit_cost_value / benchmark_receive_value × 100
 ```
 
-**OPEN (E2):** where a provider deducts the fee from the sent amount rather than adding it,
-the formula changes. Record `amount_sent_includes_fee` per observation. Never assume.
+**RESOLVED (E2), 2026-09-10.** Where a provider deducts the fee from the sent amount rather than
+adding it on top, the formula changes — and the 2023 audit ingestion (Round 4,
+`reports/04-historical.md`) proved this is genuinely per-observation, not a rule that holds even
+within one provider. Fitting `(amount_sent − fee) × rate` against 1,188 real audit rows worked
+for nearly all of them, except Western Union's cash option on NZTON, 2023-07-26 — that row fits
+`amount_sent × rate` (fee charged on top) far better (0.54 units off) than the deducted formula
+(5.94 units off, against a ~1-unit tolerance everywhere else). Same provider, both conventions,
+in the same 14-day audit window.
+
+The resolution: `amount_sent_includes_fee` is recorded **per observation**, **never inferred**
+from which formula the numbers happen to fit, and **left `null`** whenever the source doesn't
+state it outright. A connector or importer may only set it to `true`/`false` when the source
+*says* so explicitly (a fee schedule stating "fee deducted from transfer amount," for instance)
+— never by back-solving. This is already how every connector and the 2023 audit importer behave;
+this entry just makes the rule explicit rather than leaving it as an open question.
 
 ### 2.3 Benchmark rate — DECIDED (E1), 2026-09-09
 
@@ -94,6 +113,34 @@ primary choice can recompute with the other, per the original framing this decis
 
 Whatever the choice, the benchmark series is archived daily alongside the quotes and is part of
 the release. A cost figure whose benchmark cannot be reproduced is not reproducible.
+
+**Carry-forward on non-business days, maintainer decision 2026-09-10
+(`reports/05-live.md`, CLAUDE.md §1.1's exception).** NRBT (like most receiving-country central
+banks here) publishes no rate on weekends or public holidays, but provider quotes exist every
+day — Round 4's ingestion of the 2023 audit found 408 of 1,188 provider observations (34%) had
+no same-day benchmark to compare against, and every one fell on a weekend or an AU/NZ public
+holiday, not a data gap. Losing a third of observations to the benchmark's publication calendar
+is a worse trade than a flagged approximation: a benchmark date with no published rate carries
+the last published business day's rate forward, with `benchmark_is_carried_forward = true` and
+`benchmark_age_days` set to how many days stale it is. This is never silent, never applied to a
+provider's own quote (only to the benchmark side), and never applied more than however many
+consecutive non-business days actually elapsed — it does not paper over a genuine multi-day
+outage in the source, it only bridges the calendar gap the source itself declares (a weekend, a
+holiday), and `benchmark_age_days` makes exactly how far it reached visible in the data, not
+buried in a script.
+
+**Benchmark choice materially shifts cost *levels*, not *rankings* — a quantified property, not
+just an expectation.** Round 4's Task C compared `cost_pct` computed from the NRBT benchmark
+against the 2023 audit's own independently-computed cost figure (a different, undocumented
+benchmark), across the 780 matched rows: Pearson correlation 0.988, 97.7% agreement on sign,
+**100% agreement on which provider was cheapest** across all 110 date×corridor groups with 2+
+providers, mean within-day Spearman rank correlation 0.998 — but a **systematic mean gap of
+about 0.44 percentage points** (NRBT-based figures running lower), consistent in direction
+across the sample (median −0.47, std 0.85). In other words: which benchmark you choose barely
+moves who looks cheapest on a given day, but it does move the absolute cost percentage you'd
+report for any one provider by a small, consistent, non-trivial amount. Cite this finding, with
+these numbers, before treating a headline cost percentage as benchmark-independent — it isn't,
+even though the ranking mostly is.
 
 ### 2.4 FX margin
 

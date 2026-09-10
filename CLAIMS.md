@@ -78,7 +78,7 @@ this project exists to fix, stated by the programme's own reviewers.
 |---|---|---|
 | C1 | July–Aug 2023 daily audit data held in tidy form | **VERIFIED and expanded, 2026-09-10.** Located and ingested (Round 4, `reports/04-historical.md` Task A): two audit waves, not one — `audit1.csv` (2023-03-28 to 2023-04-25, 29 dates) and `audit2.csv` (2023-07-25 to 2023-08-07, 14 dates), both against Send Money Pacific and Saver Pacific. 1,188 Tonga-corridor observations imported; Vanuatu rows in `audit1.csv` exist but weren't ingested this round (no Vanuatu benchmark — see `PROVIDERS.md`) |
 | C2 | 25 Jul 2023 NZ→Tonga 'Ave Pa'anga Pau NZ$200 → TOP 284.10, fee 0, rate 1.42 | **VERIFIED, 2026-09-10** — confirmed directly against the underlying `audit2.csv` row (Saver Pacific, NZTON, 'Ave Pa'anga Pau, 25/07/2023): amountreceived 284.1, Fee 0, FXrate 1.42. Exact match, checked against the primary data as instructed, not the published paper |
-| C3 | 3 Aug 2023 AU–Tonga showed 21 options from 15 RSPs | **REFUTED, 2026-09-10** — the underlying data (`audit2.csv`, 2023-08-03, AUSTON) shows 18 option-level rows (9 per platform × 2 platforms: Send Money Pacific, Saver Pacific), 11 distinct raw MTO/mode options, 9 distinct base providers (7 per individual platform). Not 21 options or 15 RSPs by any grouping checked |
+| C3 | 3 Aug 2023 AU–Tonga showed 21 options from 15 RSPs | **REFUTED, 2026-09-10** — the underlying data (`audit2.csv`, 2023-08-03, AUSTON) shows 18 option-level rows (9 per platform × 2 platforms: Send Money Pacific, Saver Pacific), 11 distinct raw MTO/mode options, 9 distinct base providers (7 per individual platform). Not 21 options or 15 RSPs by any grouping checked. This claim originated in the pre-project ChatGPT handover (see Provenance, above) — the maintainer's count, as of this entry: the third refuted claim traced to that handover |
 | C4 | SMP and SaverPacific are independent sources | **REFUTED** — common lineage (A14). The 2023 audit compared two related platforms. Belongs in the paper |
 
 ## D. Provider observability — the live register
@@ -93,7 +93,7 @@ determination. Re-check Tier 3 quarterly.
 | # | Issue | Status |
 |---|---|---|
 | E1 | Benchmark FX rate unspecified; no deep market for TOP, WST, VUV, SBD, PGK, FJD | **DECIDED 2026-09-09.** Receiving-country central bank primary, best-observed-provider-rate retained as secondary from the first collection run. National Reserve Bank of Tonga is the first benchmark source built (Round 2). See METHODOLOGY §2.3 v0.2 and `reports/01-triage.md` §5.4 for the scoping this decision was made against |
-| E2 | Fee-inclusion convention varies by provider and changes the formula | OPEN — record per observation |
+| E2 | Fee-inclusion convention varies by provider and changes the formula | **RESOLVED 2026-09-10.** Per-observation, never inferred, `null` when the source doesn't state it — proven necessary, not just cautious, by a real mixed-convention case within one provider in the 2023 audit (Western Union Cash, NZTON, 2023-07-26 fits "fee on top," every other row that round fits "fee deducted"). See `docs/METHODOLOGY.md` §2.2 v0.5 and `reports/05-live.md` |
 | E3 | Provider identity harmonisation across vintages | OPEN — provider master with `active_from`/`active_to` |
 | E4 | Comparability of 2023 manual and 2026 automated vintages | OPEN — vintage flags mandatory |
 | E5 | Corridors where domestic-style banking makes comparison meaningless (Niue/NZ per B14; possibly Cook Islands, Tokelau) | OPEN — decide before publication |

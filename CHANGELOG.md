@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- `schema/observation.schema.json` v0.2 → v0.3: adds `benchmark_is_carried_forward` (boolean,
+  nullable) and `benchmark_age_days` (integer, nullable). Round 4's 2023-audit ingestion found
+  34% of provider observations (408/1,188) had no same-day NRBT benchmark, all on weekends or
+  AU/NZ public holidays. `CLAUDE.md` §1.1 gained a matching, explicitly flagged exception: a
+  *benchmark* (never a provider's own quote) may carry the last published business day's rate
+  forward, always marked as such. `docs/METHODOLOGY.md` v0.4 → v0.5 documents the policy and,
+  separately, resolves E2 (fee-inclusion is per-observation, never inferred) and records the
+  benchmark-sensitivity finding (benchmark choice moves cost levels ~0.44pp on average, leaves
+  rankings 99.8% undisturbed) as a quantified property. `CLAIMS.md` E2 marked resolved. See
+  `reports/05-live.md`.
 - `schema/observation.schema.json` v0.1 → v0.2: adds `rate_is_promotional` (boolean, nullable)
   and `promotion_detail` (string, nullable). Round 3 built a connector against a provider rate
   that turned out to be a new-customer promotional rate with no schema field to flag it as such
