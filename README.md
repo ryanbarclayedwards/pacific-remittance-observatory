@@ -5,7 +5,7 @@ corridors. Collected automatically from public sources, archived permanently, pu
 
 **Status:** pre-alpha. Nothing here is a data release yet.
 
-**Maintained by:** Development Policy Centre, Crawford School of Public Policy, ANU.
+**Maintained by:** Ryan Edwards
 
 ---
 
