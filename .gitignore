@@ -2,3 +2,12 @@ __pycache__/
 *.pyc
 .venv/
 .DS_Store
+
+# Round 4 (reports/04-historical.md): the maintainer's own broader research data (household
+# survey microdata, unrelated Stata .do/.dta files, draft paper output), placed locally to
+# supply the 2023 audit CSVs this project needed. Only hm-ds/Data/audit1.csv and audit2.csv
+# are actually ingested (as an archived artifact under archive/manual-audit-2023/); everything
+# else here is out of scope for this project and must never be committed -- it's survey
+# microdata with no established basis for redistribution under this project's own public,
+# append-only archive.
+hm-ds/
