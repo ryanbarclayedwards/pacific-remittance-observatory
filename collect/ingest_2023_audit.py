@@ -1,9 +1,13 @@
 """Ingest the 2023 manual remittance-cost audit (Round 4, reports/04-historical.md, Task A).
 
 Not a connector -- deliberately not registered in collect.run.CONNECTORS. A one-off import of
-data the maintainer already held (CLAIMS.md C1), located this round at hm-ds/Data/audit1.csv
-and hm-ds/Data/audit2.csv -- two separate audit waves conducted by hand against two comparison
-platforms (Send Money Pacific, Saver Pacific), not by this project's own collectors:
+data the maintainer already held (CLAIMS.md C1), sourced from audit1.csv and audit2.csv -- two
+separate audit waves conducted by hand against two comparison platforms (Send Money Pacific,
+Saver Pacific), not by this project's own collectors. Originally located inside the repository
+tree at hm-ds/Data/ (Round 4); relocated outside the repository by the maintainer (Round 6,
+reports/06-live.md) to a path this script reads via HM_DS_DATA below, deliberately kept out of
+this project's own directory tree since none of it besides these two files is this project's
+concern (see Round 4's .gitignore entry, now largely vestigial but left in place).
 
   audit1.csv: 2023-03-28 to 2023-04-25 (29 dates), corridors AUSTON/AUSVAN/NZTON/NZVAN.
   audit2.csv: 2023-07-25 to 2023-08-07 (14 dates), corridors AUSTON/NZTON only.
@@ -50,7 +54,7 @@ from collect.archive import ARCHIVE_ROOT, archive_bytes
 from collect.store import append_observations
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-HM_DS_DATA = REPO_ROOT / "hm-ds" / "Data"
+HM_DS_DATA = Path("/Users/ryanbedwards/Desktop/hm-ds/Data")
 METHODOLOGY_VERSION = "0.4"
 CONNECTOR_ID = "manual_audit.2023_import"
 CONNECTOR_VERSION = "0.1.0"

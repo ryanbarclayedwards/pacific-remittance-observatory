@@ -1,9 +1,12 @@
-# METHODOLOGY v0.5 (draft — E1 and E2 decided; collection methods extended; E5 remains open)
+# METHODOLOGY v0.6 (draft — E1 and E2 decided; collection methods extended; E5 remains open)
 
 **Do not treat this as settled.** Sections marked OPEN are research decisions for the
 maintainer, not implementation details for an agent.
 
 **Version history:**
+- v0.6 (2026-09-10) decides archive publication (new §8): `archive/` is published in full,
+  reasoned and recorded, with a takedown contact for a specific-file objection. See
+  `README.md` for the corresponding public-facing statement and `reports/06-live.md`.
 - v0.5 (2026-09-10) resolves E2 (§2.2: fee-inclusion is per-observation, never inferred —
   proven necessary, not just cautious, by a real mixed-convention case in the 2023 audit);
   documents benchmark carry-forward on non-business days as a flagged, CLAUDE.md §1.1-excepted
@@ -213,7 +216,42 @@ comparable over time; the latter reflects the market. Probably publish both.
 available and cheapest-provider rankings misleading. Cook Islands and Tokelau may be similar.
 Decide an exclusion or annotation rule before publication.
 
-## 8. Versioning
+## 8. Archive publication — DECIDED, 2026-09-10
+
+**`archive/` is published in full, alongside `store/` and every release.** Not excerpted, not
+summarised, not gated behind a request process. Three reasons, each sufficient on its own:
+
+1. **The content is factual rate data.** A daily FX table, a fee schedule, a provider's own
+   comparison-table rate — none of it is personal, sensitive, or anything other than a public
+   institution or company's own published pricing information, fetched from a public page with
+   no account and no credential (CLAUDE.md §1.4/§1.5). There is nothing in `archive/` that
+   redistribution could harm in the way it could for, say, survey microdata.
+2. **Reproducibility requires the raw bytes, not a description of them.** CLAUDE.md §1.2:
+   "Normalisation is a pure function of an archived file." A referee, a future maintainer, or
+   this project's own repair loop (§4.1) needs to be able to open the exact file a number came
+   from and re-derive it — a summary or a hash alone doesn't let anyone check the parser against
+   reality. Withholding the archive would make every other transparency commitment in this
+   project performative.
+3. **Full publication is standard practice for a research web archive.** Comparable
+   institutional projects (the Internet Archive's own holdings, academic web-archiving
+   corpora) publish captured pages in full for exactly this reason — the archive *is* the
+   evidence, not a description of it.
+
+**What this does not cover:** the 2023 manual audit's *source* data (`archive/manual-audit-2023/`)
+is the audit CSVs themselves, already factual rate/fee/provider data with no household or
+individual-level content — the same reasoning applies. It does not extend to anything under
+`hm-ds/`, which was never part of this project's archive and was relocated out of the repository
+tree entirely (Round 6, `reports/06-live.md`) rather than published in any form.
+
+**Takedown.** If a provider or platform believes a specific archived page shouldn't be
+published (a technical error on their end swept up in a fetch, for instance — not a request to
+suppress an unfavourable price), contact **[CONTACT]** with the specific file path and the
+reason. A takedown removes the file from future releases; it does not retroactively alter
+already-published git history or already-tagged releases, per this project's append-only
+design (CLAUDE.md §1.3) — a correction is a new, dated entry, the same as any other correction
+in this project, not an edit to the historical record.
+
+## 9. Versioning
 
 This document is versioned. A change to any definition above requires a version bump, a
 `CHANGELOG.md` entry, and a note in the affected releases. Historical observations are never

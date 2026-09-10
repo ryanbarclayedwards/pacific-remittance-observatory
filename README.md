@@ -56,6 +56,20 @@ schema/      observation.schema.json — the single contract
 docs/        methodology, data dictionary, coverage map
 ```
 
+## What's in `archive/`
+
+`archive/` holds the raw, unmodified bytes of every page, table and document this project has
+ever fetched to produce an observation — every daily FX table, every fee schedule, every
+provider comparison table, content-addressed by a SHA-256 hash of the exact bytes received. It
+is published in full, alongside `store/` and every release, not excerpted or gated behind a
+request. Reasoning: this is factual rate and fee data published by the provider or platform
+itself, not anything personal or sensitive; reproducing an observation requires the exact bytes
+it was parsed from, not a description of them (`docs/METHODOLOGY.md` §8); and full publication
+is standard practice for a research web archive. If you believe a specific archived file
+shouldn't be published — a technical error on your platform's end swept up in a fetch, say, not
+a request to suppress an unfavourable price — contact **[CONTACT]** with the file path and the
+reason.
+
 ## Start here
 
 - `CLAUDE.md` — how the coding agent must behave. Read before touching anything.

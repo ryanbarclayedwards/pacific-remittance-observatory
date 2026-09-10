@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `docs/METHODOLOGY.md` v0.5 → v0.6: new §8 decides archive publication — `archive/` is
+  published in full alongside `store/` and every release, with reasoning (factual rate data;
+  reproducibility requires the raw bytes; standard practice for a research web archive) and a
+  takedown contact for a specific-file objection. `README.md` gains a corresponding
+  public-facing "What's in `archive/`" statement. Maintainer decision, `reports/06-live.md`.
 - `schema/observation.schema.json` v0.2 → v0.3: adds `benchmark_is_carried_forward` (boolean,
   nullable) and `benchmark_age_days` (integer, nullable). Round 4's 2023-audit ingestion found
   34% of provider observations (408/1,188) had no same-day NRBT benchmark, all on weekends or
