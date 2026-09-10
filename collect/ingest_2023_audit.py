@@ -44,6 +44,7 @@ inventing precision the source doesn't state; `speed_text` carries the raw label
 from __future__ import annotations
 
 import csv
+import os
 import re
 import sys
 import uuid
@@ -54,7 +55,9 @@ from collect.archive import ARCHIVE_ROOT, archive_bytes
 from collect.store import append_observations
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-HM_DS_DATA = Path("/Users/ryanbedwards/Desktop/hm-ds/Data")
+# Deliberately outside the repository tree (see module docstring). Default matches the
+# maintainer's current layout; override with HM_DS_DATA_PATH for a different machine or user.
+HM_DS_DATA = Path(os.environ.get("HM_DS_DATA_PATH", str(Path.home() / "Desktop" / "hm-ds" / "Data")))
 METHODOLOGY_VERSION = "0.4"
 CONNECTOR_ID = "manual_audit.2023_import"
 CONNECTOR_VERSION = "0.1.0"
