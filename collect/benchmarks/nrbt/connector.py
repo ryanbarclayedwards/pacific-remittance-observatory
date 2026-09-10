@@ -246,6 +246,18 @@ def run(collection_run_id: str) -> list[dict]:
     collected_at = result.fetched_at
     sha256, archive_path = result.sha256, result.archive_path
 
+    if result.connection_error is not None:
+        return [
+            error_observation(
+                reason=f"connection failed fetching {SOURCE_URL}: {result.connection_error}",
+                sha256=sha256,
+                archive_path=archive_path,
+                collected_at=collected_at,
+                collection_run_id=collection_run_id,
+                availability_status="error",
+            )
+        ]
+
     if result.challenge is not None:
         return [
             error_observation(

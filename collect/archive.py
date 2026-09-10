@@ -66,13 +66,14 @@ def detect_challenge(body_text: str) -> str | None:
 @dataclass
 class FetchResult:
     url: str
-    status_code: int
+    status_code: int | None
     headers: dict
     body_text: str
     sha256: str
     archive_path: Path
     fetched_at: datetime
     challenge: str | None
+    connection_error: str | None = None
 
 
 def fetch(url: str, *, user_agent: str = USER_AGENT, timeout: float = 30.0) -> httpx.Response:
@@ -141,6 +142,28 @@ def archive_bytes(
     return sha256, path
 
 
+def archive_failure(
+    provider_slug: str, url: str, error: Exception, *, fetched_at: datetime | None = None
+) -> tuple[str, Path]:
+    """When fetch() fails before any response is received -- DNS failure, connection refused,
+    timeout -- there is no response body to archive. CLAUDE.md section 1.2 still requires every
+    observation, including an error one, to trace to a real archived artefact resolving under
+    archive/ (the CI gate enforces this unconditionally, not just for successes). So: archive a
+    record of the attempt and its failure -- the URL, when it was tried, and the exception --
+    rather than faking a payload or a placeholder hash that resolves to nothing."""
+    fetched_at = fetched_at or datetime.now(timezone.utc)
+    body = json.dumps(
+        {
+            "url": url,
+            "attempted_at": fetched_at.isoformat(),
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+        },
+        sort_keys=True,
+    ).encode("utf-8")
+    return archive_bytes(provider_slug, url, 0, {}, body, fetched_at=fetched_at)
+
+
 def read_archived_bytes(path: Path) -> bytes:
     """Read back the exact raw bytes originally archived, regardless of encoding. The
     byte-for-byte source of truth -- prefer this over read_archived_body() for anything that
@@ -172,9 +195,27 @@ def fetch_and_archive(
 
     Callers must check `.challenge` before attempting to parse `.body_text` as real content:
     a non-None value means stop and emit availability_status = "blocked", never parse further.
+    Callers must also check `.connection_error` first of all -- a non-None value means the
+    fetch never got a response at all (DNS failure, connection refused, timeout); `.status_code`
+    and `.body_text` carry no information in that case, and the archived artefact is a record
+    of the failed attempt (archive_failure()), not a response.
     """
     fetched_at = datetime.now(timezone.utc)
-    resp = fetch(url, user_agent=user_agent, timeout=timeout)
+    try:
+        resp = fetch(url, user_agent=user_agent, timeout=timeout)
+    except Exception as exc:  # noqa: BLE001 -- deliberately broad: any network-level failure
+        sha256, path = archive_failure(provider_slug, url, exc, fetched_at=fetched_at)
+        return FetchResult(
+            url=url,
+            status_code=None,
+            headers={},
+            body_text="",
+            sha256=sha256,
+            archive_path=path,
+            fetched_at=fetched_at,
+            challenge=None,
+            connection_error=f"{type(exc).__name__}: {exc}",
+        )
     sha256, path = archive_bytes(
         provider_slug, url, resp.status_code, dict(resp.headers), resp.content, fetched_at=fetched_at
     )

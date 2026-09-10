@@ -6,12 +6,22 @@ cases guard against the specific false positives Round 2's sweep actually produc
 bundled "Captcha" error-message strings, Western Union's Akamai *hostname* (not a challenge),
 and Remitly's unrelated `this.blocked` JS variable.
 """
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+import httpx
 import pytest
 
-from collect.archive import archive_bytes, detect_challenge, read_archived_body, read_archived_bytes
+import collect.archive as archive_mod
+from collect.archive import (
+    archive_bytes,
+    archive_failure,
+    detect_challenge,
+    fetch_and_archive,
+    read_archived_body,
+    read_archived_bytes,
+)
 
 FIXTURE = Path(__file__).parent / "fixtures" / "challenge-pages" / "incapsula-anz-nz.html"
 
@@ -86,3 +96,40 @@ def test_archive_bytes_round_trips_text_content_exactly(tmp_path, monkeypatch):
 
     assert read_archived_body(path) == text_body.decode("utf-8")
     assert read_archived_bytes(path) == text_body
+
+
+def test_archive_failure_records_a_real_resolvable_artefact(tmp_path, monkeypatch):
+    # Round 5 (reports/05-live.md, Task D): a connection failure has no response body to
+    # archive, but CLAUDE.md section 1.2 still requires every observation -- including an
+    # error one -- to trace to a real archived artefact. archive_failure() archives a record
+    # of the attempt and its failure instead of faking a payload or an unresolvable hash.
+    monkeypatch.setattr(archive_mod, "ARCHIVE_ROOT", tmp_path)
+
+    error = ConnectionError("[Errno 8] nodename nor servname provided, or not known")
+    sha256, path = archive_failure(
+        "test-provider", "https://this-domain-does-not-exist.invalid/rates", error,
+        fetched_at=datetime(2026, 9, 10, tzinfo=timezone.utc),
+    )
+
+    assert path.is_file()  # a real file -- this is what "resolves to archive/" actually checks
+    body = json.loads(read_archived_body(path))
+    assert body["error_type"] == "ConnectionError"
+    assert "nodename" in body["error_message"]
+    assert body["url"] == "https://this-domain-does-not-exist.invalid/rates"
+
+
+def test_fetch_and_archive_catches_a_connection_failure_instead_of_raising(tmp_path, monkeypatch):
+    monkeypatch.setattr(archive_mod, "ARCHIVE_ROOT", tmp_path)
+
+    def _raise(*args, **kwargs):
+        raise httpx.ConnectError("simulated DNS failure")
+
+    monkeypatch.setattr(archive_mod, "fetch", _raise)
+
+    result = fetch_and_archive("test-provider", "https://this-domain-does-not-exist.invalid/rates")
+
+    assert result.connection_error is not None
+    assert "ConnectError" in result.connection_error
+    assert result.status_code is None
+    assert result.challenge is None
+    assert result.archive_path.is_file()  # the failure itself was archived, not swallowed
