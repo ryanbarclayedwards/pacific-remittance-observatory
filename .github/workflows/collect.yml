@@ -1,8 +1,14 @@
 name: collect
 
-# Verify before relying on this (CLAIMS G2): scheduled workflows in public repos are
-# disabled after a period of repository inactivity. Whether the workflow's own commits
-# reset that clock is UNCHECKED. If they do not, add a heartbeat.
+# CLAIMS.md G2: scheduled workflows in public repos are disabled after 60 days of repository
+# inactivity (confirmed against GitHub's current docs, Round 1). Whether this workflow's own
+# commits count as "activity" for that clock is still undocumented -- GitHub's docs don't define
+# the term, and it can only really be settled empirically over 65+ days (see
+# scratch/round-01/claims/g2.md for the proposed test). The Commit step below now guarantees a
+# real daily commit either way (a heartbeat marker if collection itself produced nothing to
+# commit, which after Round 5's connection-error fix should be rare but isn't impossible) --
+# this doesn't resolve the open question, it just removes the specific failure mode where an
+# unlucky day with nothing to commit would also be a day with no activity to test against.
 on:
   schedule:
     - cron: "0 19 * * *"   # ~05:00 AEST. GitHub cron is best-effort, not punctual.
@@ -44,7 +50,15 @@ jobs:
           git config user.name  "pro-collector"
           git config user.email "noreply@devpolicy.org"
           git add archive/ store/
-          git diff --staged --quiet || git commit -m "collect: $(date -u +%Y-%m-%d)"
+          if git diff --staged --quiet; then
+            echo "Nothing from collection to commit -- writing a heartbeat instead (CLAIMS.md G2)."
+            mkdir -p .heartbeat
+            date -u +%Y-%m-%dT%H:%M:%SZ > .heartbeat/last-run
+            git add .heartbeat/last-run
+            git commit -m "heartbeat: $(date -u +%Y-%m-%d) (collection produced nothing to commit)"
+          else
+            git commit -m "collect: $(date -u +%Y-%m-%d)"
+          fi
           git push
 
       # Any connector that errored opens or updates an issue, which is the input to the
