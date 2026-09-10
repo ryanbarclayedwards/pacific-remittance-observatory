@@ -96,6 +96,13 @@ version and writing a migration note in `CHANGELOG.md`. Silent schema drift dest
 Any assertion about the external world in code, docs or commit messages needs an entry in
 `CLAIMS.md` with a URL and a check date. Do not restate inherited claims as fact.
 
+### 1.8 Pre-publication check before any first push to a new remote
+
+Run `docs/PRE-PUBLICATION-CHECK.md` in full before the first push to any new public remote,
+and again after any git-history rewrite. Origin: `docs/outreach-emails.md` named a real
+individual alongside internal negotiating strategy and had to be removed from history before
+this repository's own first push (`reports/06-live.md`).
+
 ---
 
 ## 2. Architecture

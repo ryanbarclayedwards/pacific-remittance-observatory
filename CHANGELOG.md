@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- `collect/ingest_2023_audit.py`: `HM_DS_DATA` is no longer a hardcoded absolute path from one
+  machine. It now defaults to `~/Desktop/hm-ds/Data` (via `Path.home()`, so no username is
+  baked in) and can be overridden with the `HM_DS_DATA_PATH` environment variable. There's no
+  reason for committed code to carry an absolute path from one machine. `reports/04-historical.md`
+  is left as-is despite containing the same absolute path — reports are a historical record of
+  what was actually run and shouldn't be rewritten to look tidier than they were.
+- `docs/outreach-emails.md` removed from the repository and rewritten out of git history
+  (`git-filter-repo`) before the first public push. It named a real individual alongside
+  internal negotiating strategy about him — content with ongoing value to the maintainer, but
+  that must never be in a public repository. Full content preserved outside the repo tree
+  first. `.gitignore` now excludes `docs/outreach-emails.md` and `docs/private/`. See
+  `docs/PRE-PUBLICATION-CHECK.md`, added the same round so this is a repeatable procedure
+  rather than a one-off. `reports/06-live.md`.
 - `docs/METHODOLOGY.md` v0.5 → v0.6: new §8 decides archive publication — `archive/` is
   published in full alongside `store/` and every release, with reasoning (factual rate data;
   reproducibility requires the raw bytes; standard practice for a research web archive) and a
