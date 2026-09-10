@@ -11,3 +11,10 @@ __pycache__/
 # microdata with no established basis for redistribution under this project's own public,
 # append-only archive.
 hm-ds/
+
+# Round 6 (reports/06-live.md): outreach-emails.md named a real individual alongside internal
+# negotiating strategy -- content with ongoing value to the maintainer, but that must never be
+# in a public repo. Removed from history (git-filter-repo) before the first push. docs/private/
+# is a standing location for anything else of this kind found later.
+docs/outreach-emails.md
+docs/private/
